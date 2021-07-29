@@ -1,0 +1,20 @@
+Package: nucleos
+Title: Central Bank of Brazil inflation cores
+Version: 0.0.1
+Authors@R: 
+    person(given = "Fernando",
+           family = "da Silva",
+           role = c("aut", "cre"),
+           email = "fernando@fortietwo.com",
+           comment = c(ORCID = "0000-0002-7491-6930"))
+Description: Calculates the inflation cores used by the Central Bank of Brazil
+License: file LICENSE
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1
+Imports: 
+    dplyr,
+    magrittr,
+    purrr,
+    sidrar
