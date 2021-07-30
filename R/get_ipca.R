@@ -65,7 +65,8 @@ get_ipca <- function(table = c(1419, 7060), period = "all") {
       "date"  = 9,  # `Mês (Código)`,
       table,        # SIDRA table ID
       "code"  = 13, # `Geral, grupo, subgrupo, item e subitem (Código)`,
-      "desc"  = 6   # `Valor`
+      "desc"  = 14, # `Geral, grupo, subgrupo, item e subitem`,
+      "value" = 6   # `Valor`
       ) %>%
     dplyr::mutate(date = lubridate::ymd(paste0(date, "01"))) %>%
     dplyr::as_tibble()
@@ -92,6 +93,3 @@ get_ipca <- function(table = c(1419, 7060), period = "all") {
   )
 
 }
-
-
-

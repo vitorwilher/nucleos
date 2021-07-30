@@ -2,4 +2,5 @@
 
 export("%>%")
 export(get_ipca)
+export(group_desc)
 importFrom(magrittr,"%>%")

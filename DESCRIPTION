@@ -22,4 +22,5 @@ Imports:
     purrr,
     rlang,
     sidrar,
+    stringr,
     tidyr
