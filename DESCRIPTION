@@ -17,6 +17,7 @@ Imports:
     curl,
     dplyr,
     httr,
+    lubridate,
     magrittr,
     purrr,
     rlang,

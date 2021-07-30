@@ -38,15 +38,15 @@ get_ipca <- function(table = c(1419, 7060), period = "all") {
 
   # Fetch data
   df_sidra <- {{table}} %>%
-    purrr::set_names(paste0("table_", .)) %>%
+    purrr::set_names() %>%
     as.list() %>%
     purrr::map(
       ~purrr::map(
         .x = c(
-          "IPCA - Variacao mensal (%)"              = 63,
-          "IPCA - Variacao acumulada no ano (%)"    = 69,
-          "IPCA - Variacao acumulada em  meses (%)" = 2265,
-          "IPCA - Peso mensal"                      = 66
+          "IPCA - Variacao mensal (%)" = 63,
+          # "IPCA - Variacao acumulada no ano (%)" = 69,
+          # "IPCA - Variacao acumulada em  meses (%)" = 2265,
+          "IPCA - Peso mensal" = 66
           ),
         ~sidrar::get_sidra(
           x        = .y,
@@ -57,7 +57,39 @@ get_ipca <- function(table = c(1419, 7060), period = "all") {
         )
       )
 
-  return(df_sidra)
+  # IPCA - Monthly change (%)
+  ipca_mom <- df_sidra %>%
+    purrr::map(1) %>%
+    dplyr::bind_rows(.id = "table") %>%
+    dplyr::select(
+      "date"  = 9,  # `Mês (Código)`,
+      table,        # SIDRA table ID
+      "code"  = 13, # `Geral, grupo, subgrupo, item e subitem (Código)`,
+      "desc"  = 6   # `Valor`
+      ) %>%
+    dplyr::mutate(date = lubridate::ymd(paste0(date, "01"))) %>%
+    dplyr::as_tibble()
+
+  # IPCA - Monthly Weight
+  ipca_wei <- df_sidra %>%
+    purrr::map(2) %>%
+    dplyr::bind_rows(.id = "table") %>%
+    dplyr::select(
+      "date"  = 9,  # `Mês (Código)`,
+      table,        # SIDRA table ID
+      "code"  = 13, # `Geral, grupo, subgrupo, item e subitem (Código)`,
+      "desc"  = 14, # `Geral, grupo, subgrupo, item e subitem`,
+      "value" = 6   # `Valor`
+      ) %>%
+    dplyr::mutate(date = lubridate::ymd(paste0(date, "01"))) %>%
+    dplyr::as_tibble()
+
+  return(
+    list(
+      "IPCA MoM"    = ipca_mom,
+      "IPCA Weight" = ipca_wei
+    )
+  )
 
 }
 
