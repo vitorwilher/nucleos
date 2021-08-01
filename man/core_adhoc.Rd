@@ -4,7 +4,7 @@
 \alias{core_adhoc}
 \title{Computes ad-hoc core inflation using the subitem exclusion method}
 \usage{
-core_adhoc(core, data, change, weight, date)
+core_adhoc(core, data, change, weight, code, date)
 }
 \arguments{
 \item{core}{A string specifying the inflation core exclusion method: ex0, ex1, ex2 or ex3.}
@@ -14,6 +14,8 @@ core_adhoc(core, data, change, weight, date)
 \item{change}{A string with the column name of the percentage change of the inflation sub-items.}
 
 \item{weight}{A string with the column name of the weight of the inflation sub-items.}
+
+\item{code}{A string with the column name of the code of the inflation sub-items as provided in \code{\link[=get_ipca]{get_ipca()}}.}
 
 \item{date}{A string with the name of the date column.}
 }

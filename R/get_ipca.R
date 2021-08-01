@@ -8,7 +8,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' my_df <- get_sidra(1419, "last")
+#' my_df <- get_ipca(1419, "last")
 #' }
 get_ipca <- function(table = c(1419, 7060), period = "all") {
 
@@ -70,7 +70,7 @@ get_ipca <- function(table = c(1419, 7060), period = "all") {
       ) %>%
     dplyr::mutate(
       date = lubridate::ymd(paste0(date, "01")),
-      code = as.numeric(code)
+      code = as.numeric(.data$code)
       ) %>%
     dplyr::as_tibble()
 
@@ -87,7 +87,7 @@ get_ipca <- function(table = c(1419, 7060), period = "all") {
       ) %>%
     dplyr::mutate(
       date = lubridate::ymd(paste0(date, "01")),
-      code = as.numeric(code)
+      code = as.numeric(.data$code)
       ) %>%
     dplyr::as_tibble()
 

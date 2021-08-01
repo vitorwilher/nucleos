@@ -1,3 +1,6 @@
 utils::globalVariables(
-  c(".")
+  c(
+    ".",
+    "ipca_classes_2020"
+    )
 )

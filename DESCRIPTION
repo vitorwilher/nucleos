@@ -23,3 +23,5 @@ Imports:
     rlang,
     sidrar,
     stringr
+Depends: 
+    R (>= 2.10)

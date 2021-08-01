@@ -1,6 +1,6 @@
 # Relatório de Inflação (dezembro/2019)
 
-ipca_classes_actual = dplyr::lst(
+.ipca_classes_2020 <- dplyr::lst(
 
   "monitorados" = c(
     7451, # Taxa de água e esgoto
@@ -27,7 +27,7 @@ ipca_classes_actual = dplyr::lst(
     107668, # Jogos de azar
     7789, # Correio
     47668 # Plano de telefonia fixa
-    ),
+  ),
 
   "servicos" = c(
     7432, # Alimentação fora do domicílio
@@ -72,7 +72,7 @@ ipca_classes_actual = dplyr::lst(
     107688, # Acesso à internet
     47671, # Serviços de streaming
     47672 # Combo de telefonia, internet e TV por assinatura
-    ),
+  ),
 
   "servicos_subjacente" = c(
     7432, # Alimentação fora do domicílio
@@ -104,7 +104,7 @@ ipca_classes_actual = dplyr::lst(
     47658, # Casa noturna
     47661, # Serviço de higiene para animais
     47662 # Cinema, teatro e concertos
-    ),
+  ),
 
   "servicos_ex_subjacente" = servicos[!servicos %in% servicos_subjacente],
 
@@ -178,7 +178,7 @@ ipca_classes_actual = dplyr::lst(
     7794, # Aparelho telefônico
     47671, # Serviços de streaming
     47672 # Combo de telefonia, internet e tv por assinatura
-    ),
+  ),
 
   "ex1" = c(
     7184, # Farinhas, féculas e massas
@@ -220,7 +220,7 @@ ipca_classes_actual = dplyr::lst(
     7782, # Papelaria
     107678, # Cursos diversos
     7788 # Comunicação
-    ),
+  ),
 
   "ex2" = c(
     7335, # Carnes e peixes industrializados
@@ -289,7 +289,7 @@ ipca_classes_actual = dplyr::lst(
     7777, # Leitura
     7782, # Papelaria
     7794 # Aparelho telefônico
-    ),
+  ),
 
   "ex3" = c(
     7432, # Alimentação fora do domicílio
@@ -354,6 +354,6 @@ ipca_classes_actual = dplyr::lst(
     7777, # Leitura
     7782, # Papelaria
     7794 # Aparelho telefônico
-    )
-
   )
+
+)
