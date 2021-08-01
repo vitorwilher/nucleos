@@ -1,13 +1,13 @@
-#' Title
+#' Computes ad-hoc core inflation using the subitem exclusion method
 #'
-#' @param core Inflation core
-#' @param data Data frame
-#' @param change Percent change
-#' @param weight Inflation weight
-#' @param date Date column
+#' @param core A string specifying the inflation core exclusion method: ex0, ex1, ex2 or ex3.
+#' @param data Dataframe object with inflation sub-items data.
+#' @param change A string with the column name of the percentage change of the inflation sub-items.
+#' @param weight A string with the column name of the weight of the inflation sub-items.
+#' @param date A string with the name of the date column.
 #' @importFrom rlang .data :=
 #'
-#' @return Tibble
+#' @return Calculated core inflation tibble.
 #' @export
 #'
 core_adhoc <- function(core, data, change, weight, date){

@@ -2,24 +2,24 @@
 % Please edit documentation in R/core_adhoc.R
 \name{core_adhoc}
 \alias{core_adhoc}
-\title{Title}
+\title{Computes ad-hoc core inflation using the subitem exclusion method}
 \usage{
 core_adhoc(core, data, change, weight, date)
 }
 \arguments{
-\item{core}{Inflation core}
+\item{core}{A string specifying the inflation core exclusion method: ex0, ex1, ex2 or ex3.}
 
-\item{data}{Data frame}
+\item{data}{Dataframe object with inflation sub-items data.}
 
-\item{change}{Percent change}
+\item{change}{A string with the column name of the percentage change of the inflation sub-items.}
 
-\item{weight}{Inflation weight}
+\item{weight}{A string with the column name of the weight of the inflation sub-items.}
 
-\item{date}{Date column}
+\item{date}{A string with the name of the date column.}
 }
 \value{
-Tibble
+Calculated core inflation tibble.
 }
 \description{
-Title
+Computes ad-hoc core inflation using the subitem exclusion method
 }
