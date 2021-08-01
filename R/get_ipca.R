@@ -68,7 +68,10 @@ get_ipca <- function(table = c(1419, 7060), period = "all") {
       "desc"  = 14, # `Geral, grupo, subgrupo, item e subitem`,
       "value" = 6   # `Valor`
       ) %>%
-    dplyr::mutate(date = lubridate::ymd(paste0(date, "01"))) %>%
+    dplyr::mutate(
+      date = lubridate::ymd(paste0(date, "01")),
+      code = as.numeric(code)
+      ) %>%
     dplyr::as_tibble()
 
   # IPCA - Monthly Weight
@@ -82,7 +85,10 @@ get_ipca <- function(table = c(1419, 7060), period = "all") {
       "desc"  = 14, # `Geral, grupo, subgrupo, item e subitem`,
       "value" = 6   # `Valor`
       ) %>%
-    dplyr::mutate(date = lubridate::ymd(paste0(date, "01"))) %>%
+    dplyr::mutate(
+      date = lubridate::ymd(paste0(date, "01")),
+      code = as.numeric(code)
+      ) %>%
     dplyr::as_tibble()
 
   return(
