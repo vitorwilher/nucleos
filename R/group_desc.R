@@ -31,7 +31,7 @@ group_desc <- function(data) {
       )
   } else df_desc <- data %>%
       dplyr::mutate(
-        snipc = stringr::str_count(desc, "\\d"),
+        snipc = stringr::str_count(.data$desc, "\\d"),
         group = dplyr::case_when(
           snipc == 0 ~ "Geral",
           snipc == 1 ~ "Grupo",
@@ -39,7 +39,7 @@ group_desc <- function(data) {
           snipc == 4 ~ "Item",
           snipc == 7 ~ "Subitem"
         ),
-        snipc = stringr::str_sub(desc, 1, stringr::str_count(desc, "\\d"))
+        snipc = stringr::str_sub(.data$desc, 1, stringr::str_count(.data$desc, "\\d"))
       )
 
   return(df_desc)

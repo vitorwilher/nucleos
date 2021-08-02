@@ -96,9 +96,9 @@ get_ipca <- function(table = c(1419, 7060), period = "all", unite = TRUE) {
   if(unite) {
     sidra_tbl <- dplyr::left_join(
       ipca_mom %>%
-        dplyr::rename("pct_change" = value),
+        dplyr::rename("pct_change" = .data$value),
       ipca_wei %>%
-        dplyr::select(date, table, code, "weight" = value),
+        dplyr::select(.data$date, .data$table, .data$code, "weight" = .data$value),
       c("date", "table", "code")
     )
   } else sidra_tbl <- list(
