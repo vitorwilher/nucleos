@@ -8,7 +8,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' my_df <- get_ipca(1419, "last")
+#' my_df <- get_ipca(table = 7060, period = "last")
 #' }
 get_ipca <- function(table = c(1419, 7060), period = "all") {
 

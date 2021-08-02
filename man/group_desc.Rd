@@ -18,7 +18,7 @@ Create IPCA groups, subsgroups, etc. descriptions and codes
 \examples{
 \dontrun{
 library(magrittr)
-my_df <- get_ipca(period = "last") \%>\%
+my_df <- get_ipca(table = 7060, period = "last") \%>\%
 group_desc()
 }
 }

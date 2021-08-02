@@ -25,3 +25,17 @@ Calculated core inflation tibble.
 \description{
 Computes ad-hoc core inflation using the subitem exclusion method
 }
+\examples{
+\dontrun{
+library(magrittr)
+ipca_ex0 <- get_ipca(table = 7060) \%>\%
+group_desc()
+
+dplyr::tibble(
+"date" = ipca_ex0[["IPCA MoM"]][["date"]],
+"mom" = ipca_ex0[["IPCA MoM"]][["value"]],
+"weight" = ipca_ex0[["IPCA Weight"]][["value"]],
+"codigo" = ipca_ex0[["IPCA MoM"]][["code"]]
+) \%>\% core_adhoc("ex0", ., "mom", "weight", "codigo", "date")
+}
+}
