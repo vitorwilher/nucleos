@@ -4,15 +4,17 @@
 \alias{get_ipca}
 \title{Fetch IPCA table's from SIDRA/IBGE}
 \usage{
-get_ipca(table = c(1419, 7060), period = "all")
+get_ipca(table = c(1419, 7060), period = "all", unite = TRUE)
 }
 \arguments{
 \item{table}{A table from IBGE's SIDRA API.}
 
 \item{period}{A character vector describing the period of data.}
+
+\item{unite}{Logical, whether or not to join the data on percentage change and monthly weight from the IPCA tables.}
 }
 \value{
-List with data frames.
+Tibble with monthly IPCA percent change and weight.
 }
 \description{
 Fetch IPCA table's from SIDRA/IBGE

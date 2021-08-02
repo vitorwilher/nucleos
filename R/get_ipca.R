@@ -2,15 +2,16 @@
 #'
 #' @param table A table from IBGE's SIDRA API.
 #' @param period A character vector describing the period of data.
+#' @param unite Logical, whether or not to join the data on percentage change and monthly weight from the IPCA tables.
 #'
-#' @return List with data frames.
+#' @return Tibble with monthly IPCA percent change and weight.
 #' @export
 #'
 #' @examples
 #' \dontrun{
 #' my_df <- get_ipca(table = 7060, period = "last")
 #' }
-get_ipca <- function(table = c(1419, 7060), period = "all") {
+get_ipca <- function(table = c(1419, 7060), period = "all", unite = TRUE) {
 
   # Check valid SIDRA tables
   if(!all(table %in% c(1419, 7060))) {
@@ -91,11 +92,20 @@ get_ipca <- function(table = c(1419, 7060), period = "all") {
       ) %>%
     dplyr::as_tibble()
 
-  return(
-    list(
-      "IPCA MoM"    = ipca_mom,
-      "IPCA Weight" = ipca_wei
+  # Unite or not table's
+  if(unite) {
+    sidra_tbl <- dplyr::left_join(
+      ipca_mom %>%
+        dplyr::rename("pct_change" = value),
+      ipca_wei %>%
+        dplyr::select(date, table, code, "weight" = value),
+      c("date", "table", "code")
     )
-  )
+  } else sidra_tbl <- list(
+    "IPCA MoM"    = ipca_mom,
+    "IPCA Weight" = ipca_wei
+    )
+
+  return(sidra_tbl)
 
 }

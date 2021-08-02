@@ -10,7 +10,7 @@ group_desc(data)
 \item{data}{Output from get_ipca()}
 }
 \value{
-List of data frames with new columns
+Tibble with new columns
 }
 \description{
 Create IPCA groups, subsgroups, etc. descriptions and codes
