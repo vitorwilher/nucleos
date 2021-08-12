@@ -67,16 +67,36 @@ core_adhoc <- function(core, data, change, weight, code, date){
   # Filter the sub-items according to the core inflation exclusion method
   if(ci == "ex0") {
     ipca_core <- ipca_core %>%
-      dplyr::filter(code %in% ipca_classes_2020[["ex0"]])
+      dplyr::filter(
+        dplyr::case_when(
+          date >= lubridate::as_date("2020-01-01") ~ code %in% ipca_classes_2020[["ex0"]],
+          TRUE ~ code %in% ipca_classes_2012[["ex0"]]
+          )
+        )
   } else if(ci == "ex1") {
     ipca_core <- ipca_core %>%
-      dplyr::filter(code %in% ipca_classes_2020[["ex1"]])
+      dplyr::filter(
+        dplyr::case_when(
+          date >= lubridate::as_date("2020-01-01") ~ code %in% ipca_classes_2020[["ex1"]],
+          TRUE ~ code %in% ipca_classes_2012[["ex1"]]
+        )
+      )
   } else if(ci == "ex2") {
     ipca_core <- ipca_core %>%
-      dplyr::filter(code %in% ipca_classes_2020[["ex2"]])
+      dplyr::filter(
+        dplyr::case_when(
+          date >= lubridate::as_date("2020-01-01") ~ code %in% ipca_classes_2020[["ex2"]],
+          TRUE ~ code %in% ipca_classes_2012[["ex2"]]
+        )
+      )
   } else if(ci == "ex3") {
     ipca_core <- ipca_core %>%
-      dplyr::filter(code %in% ipca_classes_2020[["ex3"]])
+      dplyr::filter(
+        dplyr::case_when(
+          date >= lubridate::as_date("2020-01-01") ~ code %in% ipca_classes_2020[["ex3"]],
+          TRUE ~ code %in% ipca_classes_2012[["ex3"]]
+        )
+      )
   }
   ci <- paste0("ipca_", ci)
 
