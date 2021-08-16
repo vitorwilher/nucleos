@@ -28,22 +28,22 @@ core_ma <- function(data, change, weight, date){
 
   # Check if data is data frame
   if(!is.data.frame(df)) {
-    rlang::abort("{data} must be a data frame")
+    rlang::abort("{data} must be a data frame.")
   }
 
   # Check if inflation percent change column is present in data
   if(!pc %in% colnames(df) | !rlang::is_double(df[[pc]])){
-    rlang::abort("The percent {change} column must be numeric and present in the data.")
+    rlang::abort("The percent {change} column must be numeric and present in the dataset.")
   }
 
   # Check if inflation weight column is present in data
   if(!we %in% colnames(df) | !rlang::is_double(df[[we]])){
-    rlang::abort("Column of {weight} must be numeric and present in the data.")
+    rlang::abort("Column of {weight} must be numeric and present in the dataset.")
   }
 
   # Check if date column is present in data
   if(!dt %in% colnames(df) | !lubridate::is.Date(df[[dt]])){
-    rlang::abort("Column of {date} must be of class Date and be present in the data.")
+    rlang::abort("Column of {date} must be of class Date and be present in the dataset.")
   }
 
   # Inflation core data
@@ -77,4 +77,5 @@ core_ma <- function(data, change, weight, date){
         round(2)
       )
 
+  return(ipca_core)
 }

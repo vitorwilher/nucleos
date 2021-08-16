@@ -28,7 +28,7 @@ library(dplyr)
 
 ipca_ma <- get_ipca(period = "all") \%>\%
 group_desc() \%>\%
-filter(group == "Item") \%>\%
+dplyr::filter(group == "Item") \%>\%
 core_ma(., "pct_change", "weight", "date")
 }
 }
