@@ -14,7 +14,7 @@
 #' @examples
 #' \dontrun{
 #' library(magrittr)
-#' ipca_ex0 <- get_ipca(table = 7060, unite = TRUE) %>%
+#' ipca_ex0 <- get_ipca(period = "all") %>%
 #' core_adhoc("ex0", ., "pct_change", "weight", "code", "date")
 #' }
 core_adhoc <- function(core, data, change, weight, code, date){
@@ -31,7 +31,7 @@ core_adhoc <- function(core, data, change, weight, code, date){
     rlang::abort("Pass a valid inflation {core} to be calculated.")
   }
 
-  # Check if data is tibble
+  # Check if data is data frame
   if(!is.data.frame(df)) {
     rlang::abort("Data must be a data frame")
   }
