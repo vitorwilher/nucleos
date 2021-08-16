@@ -13,6 +13,7 @@
 #'   \item{ex1}{IPCA-EX1 exclusion core items}
 #'   \item{ex2}{IPCA-EX2 exclusion core items}
 #'   \item{ex3}{IPCA-EX3 exclusion core items}
+#'   \item{smoothed}{IPCA-MS items to smooth}
 #'   ...
 #' }
 #' @source \url{https://www.bcb.gov.br/content/ri/relatorioinflacao/201912/ri201912p.pdf}
@@ -33,6 +34,7 @@
 #'   \item{ex1}{IPCA-EX1 exclusion core items}
 #'   \item{ex2}{IPCA-EX2 exclusion core items}
 #'   \item{ex3}{IPCA-EX3 exclusion core items}
+#'   \item{smoothed}{IPCA-MS items to smooth}
 #'   ...
 #' }
 #' @source \url{https://www.bcb.gov.br/content/ri/relatorioinflacao/201112/RELINF201112-ri201112b3p.pdf}

@@ -15,6 +15,7 @@ A list with 8 numeric vectors.
 \item{ex1}{IPCA-EX1 exclusion core items}
 \item{ex2}{IPCA-EX2 exclusion core items}
 \item{ex3}{IPCA-EX3 exclusion core items}
+\item{smoothed}{IPCA-MS items to smooth}
 ...
 }
 }

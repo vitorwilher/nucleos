@@ -354,6 +354,18 @@
     7777, # Leitura
     7782, # Papelaria
     7794 # Aparelho telefônico
+  ),
+
+  "smoothed" = c(
+    7480, # Combustíveis (domésticos)
+    7484, # Energia elétrica residencial
+    7627, # Transporte público
+    7656, # Combustíveis (veículos)
+    7714, # Serviços pessoais
+    7758, # Fumo
+    12427, # Cursos regulares
+    107678, # Cursos diversos
+    7788 # Comunicação
   )
 
 )
