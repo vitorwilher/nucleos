@@ -1,6 +1,7 @@
 #' Create IPCA groups, subsgroups, etc. descriptions and codes
 #'
 #' @param data Output from get_ipca()
+#' @author Fernando da Silva <<fernando@fortietwo.com>>
 #'
 #' @return Tibble with new columns
 #' @export

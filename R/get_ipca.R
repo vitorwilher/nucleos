@@ -3,6 +3,7 @@
 #' @param table A table from IBGE's SIDRA API.
 #' @param period A character vector describing the period of data.
 #' @param unite Logical, whether or not to join the data on percentage change and monthly weight from the IPCA tables.
+#' @author Fernando da Silva <<fernando@fortietwo.com>>
 #'
 #' @return Tibble with monthly IPCA percent change and weight.
 #' @export

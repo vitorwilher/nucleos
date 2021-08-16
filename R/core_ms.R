@@ -6,6 +6,7 @@
 #' @param code A string with the column name of the code of the inflation items as provided in [get_ipca()].
 #' @param date A string with the name of the date column.
 #' @importFrom rlang .data
+#' @author Fernando da Silva <<fernando@fortietwo.com>>
 #'
 #' @return Calculated core inflation tibble.
 #' @export
