@@ -33,27 +33,27 @@ core_adhoc <- function(core, data, change, weight, code, date){
 
   # Check if data is data frame
   if(!is.data.frame(df)) {
-    rlang::abort("Data must be a data frame")
+    rlang::abort("Data must be a data frame,")
   }
 
   # Check if inflation percent change column is present in data
   if(!pc %in% colnames(df) | !rlang::is_double(df[[pc]])){
-    rlang::abort("The percent {change} column must be numeric and present in the data.")
+    rlang::abort("The percent {change} column must be numeric and present in the dataset.")
   }
 
   # Check if inflation weight column is present in data
   if(!we %in% colnames(df) | !rlang::is_double(df[[we]])){
-    rlang::abort("Column of {weight} must be numeric and present in the data.")
+    rlang::abort("Column of {weight} must be numeric and present in the dataset.")
   }
 
   # Check if inflation sub-items code is presente in data
   if(!cd %in% colnames(df) | !rlang::is_double(df[[cd]])) {
-    rlang::abort("Column of {code} must be numeric and present in the data.")
+    rlang::abort("Column of {code} must be numeric and present in the dataset.")
   }
 
   # Check if date column is present in data
   if(!dt %in% colnames(df) | !lubridate::is.Date(df[[dt]])){
-    rlang::abort("Column of {date} must be of class Date and be present in the data.")
+    rlang::abort("Column of {date} must be of class Date and be present in the dataset.")
   }
 
   # Inflation core data
