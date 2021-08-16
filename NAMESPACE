@@ -2,6 +2,7 @@
 
 export("%>%")
 export(core_adhoc)
+export(core_ma)
 export(get_ipca)
 export(group_desc)
 importFrom(magrittr,"%>%")
