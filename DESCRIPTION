@@ -23,6 +23,10 @@ Imports:
     RcppRoll,
     rlang,
     sidrar,
-    stringr
+    stats,
+    stringr,
+    tibbletime,
+    tidyr,
+    timetk
 Depends: 
     R (>= 2.10)

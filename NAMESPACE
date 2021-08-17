@@ -2,6 +2,7 @@
 
 export("%>%")
 export(core_adhoc)
+export(core_dp)
 export(core_ma)
 export(core_ms)
 export(get_ipca)
