@@ -22,3 +22,6 @@ my_df <- get_ipca(table = 7060, period = "last") \%>\%
 group_desc()
 }
 }
+\author{
+Fernando da Silva <\href{mailto:fernando@fortietwo.com}{fernando@fortietwo.com}>
+}

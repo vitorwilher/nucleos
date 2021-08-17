@@ -24,3 +24,6 @@ Fetch IPCA table's from SIDRA/IBGE
 my_df <- get_ipca(table = 7060, period = "last")
 }
 }
+\author{
+Fernando da Silva <\href{mailto:fernando@fortietwo.com}{fernando@fortietwo.com}>
+}

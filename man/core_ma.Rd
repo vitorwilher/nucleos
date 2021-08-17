@@ -32,3 +32,6 @@ dplyr::filter(group == "Item") \%>\%
 core_ma(., "pct_change", "weight", "date")
 }
 }
+\author{
+Fernando da Silva <\href{mailto:fernando@fortietwo.com}{fernando@fortietwo.com}>
+}

@@ -32,3 +32,6 @@ ipca_ex0 <- get_ipca(period = "all") \%>\%
 core_adhoc("ex0", ., "pct_change", "weight", "code", "date")
 }
 }
+\author{
+Fernando da Silva <\href{mailto:fernando@fortietwo.com}{fernando@fortietwo.com}>
+}
