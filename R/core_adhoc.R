@@ -105,7 +105,7 @@ core_adhoc <- function(core, data, change, weight, code, date){
   ipca_core <- ipca_core %>%
     dplyr::group_by(date) %>%
     dplyr::summarise(
-      {{ci}} := stats::weighted.mean(.data$pctc, .data$weig, na.rm = TRUE)
+      {{ci}} := stats::weighted.mean(.data$pctc, .data$weig, na.rm = TRUE) %>% round(2)
       )
 
   return(ipca_core)
