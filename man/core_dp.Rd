@@ -28,9 +28,8 @@ Computes core inflation using the double weight method
 \examples{
 \dontrun{
 library(magrittr)
-library(dplyr)
 
-ipca_dÂ´p <- get_ipca(period = "all") \%>\%
+ipca_dp <- get_ipca(period = "all") \%>\%
 group_desc() \%>\%
 core_dp(., "pct_change", "weight", "code", "group", "date")
 }

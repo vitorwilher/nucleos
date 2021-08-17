@@ -15,9 +15,8 @@
 #' @examples
 #' \dontrun{
 #' library(magrittr)
-#' library(dplyr)
 #'
-#' ipca_d´p <- get_ipca(period = "all") %>%
+#' ipca_dp <- get_ipca(period = "all") %>%
 #' group_desc() %>%
 #' core_dp(., "pct_change", "weight", "code", "group", "date")
 #' }
