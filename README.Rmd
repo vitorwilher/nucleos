@@ -16,6 +16,7 @@ knitr::opts_chunk$set(
 # nucleos
 
 <!-- badges: start -->
+[![R-CMD-check](https://github.com/analisemacropro/nucleos/workflows/R-CMD-check/badge.svg)](https://github.com/analisemacropro/nucleos/actions)
 <!-- badges: end -->
 
 O objetivo deste pacote é **calcular as medidas de núcleos de inflação** divulgadas pelo Banco Central do Brasil a partir dos dados desagregados do IPCA/IBGE. O pacote contempla o cálculo dos núcleos por exclusão e estatísticos comumente acompanhados pela autoridade monetária: IPCA-EX0, IPCA-EX1, IPCA-EX2, IPCA-EX3, IPCA-MA, IPCA-MS e IPCA-DP.

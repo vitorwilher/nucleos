@@ -4,6 +4,8 @@
 # nucleos
 
 <!-- badges: start -->
+
+[![R-CMD-check](https://github.com/analisemacropro/nucleos/workflows/R-CMD-check/badge.svg)](https://github.com/analisemacropro/nucleos/actions)
 <!-- badges: end -->
 
 O objetivo deste pacote é **calcular as medidas de núcleos de inflação**

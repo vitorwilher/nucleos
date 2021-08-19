@@ -2,6 +2,5 @@
 ^renv\.lock$
 ^nucleos\.Rproj$
 ^\.Rproj\.user$
-R/ipca_classes_2020.R
 ^README\.Rmd$
 ^\.github$
