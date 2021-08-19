@@ -1,0 +1,103 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# nucleos
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+O objetivo deste pacote é **calcular as medidas de núcleos de inflação** divulgadas pelo Banco Central do Brasil a partir dos dados desagregados do IPCA/IBGE. O pacote contempla o cálculo dos núcleos por exclusão e estatísticos comumente acompanhados pela autoridade monetária: IPCA-EX0, IPCA-EX1, IPCA-EX2, IPCA-EX3, IPCA-MA, IPCA-MS e IPCA-DP.
+
+Este pacote desenvolvido em `R` e faz parte dos **cursos da [Análise Macro](https://analisemacro.com.br/)**.
+
+## Licença
+
+Copyright 2021 Análise Macro. All rights reserved.
+
+## Instalação
+
+O pacote pode ser instalado através do [GitHub](https://github.com/) com o `remotes`:
+
+``` r
+if(!require("remotes")) install.packages("remotes")
+remotes::install_github("analisemacropro/nucleos")
+```
+
+## Funcionalidades
+
+Resumo das principais funcionalidade do pacote:
+
+| Tipo | Núcleo | Função |
+| ----- | ----- | ----- |
+| Exclusão | IPCA-EX0 | `nucleos::core_adhoc()` |
+| Exclusão | IPCA-EX1 | `nucleos::core_adhoc()` |
+| Exclusão | IPCA-EX2 | `nucleos::core_adhoc()` |
+| Exclusão | IPCA-EX3 | `nucleos::core_adhoc()` |
+| Média aparada | IPCA-MA | `nucleos::core_ma()` |
+| Média aparada | IPCA-MS | `nucleos::core_ms()` |
+| Dupla ponderação | IPCA-DP | `nucleos::core_dp()` |
+
+## Utilização
+
+Exemplos de utilização, primeiro colete os dados:
+
+```{r install}
+# Carregar pacotes para exemplos
+if(!require("pacman")) install.packages("pacman")
+pacman::p_load("nucleos", "dplyr", "magrittr")
+
+# Coletar e tratar dados desagregados do IPCA
+ipca_core <- nucleos::get_ipca(table = c(1419, 7060), period = "all") %>%
+  nucleos::group_desc()
+
+# Resultado
+ipca_core
+```
+
+Calculando o IPCA-EX0:
+
+```{r example}
+# Núcleo IPCA-EX0
+ipca_ex0 <- nucleos::core_adhoc(
+  core   = "ex0", # pode ser também ex1, ex2, ex3
+  data   = ipca_core,
+  change = "pct_change",  # nome da coluna com variações mensais
+  weight = "weight",      # nome da coluna dos pesos
+  code   = "code",        # nome da coluna de identificação do código do elemento
+  date   = "date"         # nome da coluna de datas
+  )
+
+# Resultado
+ipca_ex0
+```
+
+Exemplos para os demais núcleos (consulte a documentação das funções para detalhes):
+
+```{r example2, eval=FALSE}
+# Núcleo IPCA-MA
+ipca_ma <- ipca_core  %>%
+  dplyr::filter(group == "Item") %>%
+  nucleos::core_ma(., "pct_change", "weight", "date")
+
+# Núcleo IPCA-MS
+ipca_ms <- ipca_core  %>%
+  dplyr::filter(group == "Item") %>%
+  nucleos::core_ms(., "pct_change", "weight", "code", "date")
+
+# Núcleo IPCA-DP
+ipca_dp <- ipca_core  %>%
+  nucleos::core_dp(., "pct_change", "weight", "code", "group", "date")
+```
+
