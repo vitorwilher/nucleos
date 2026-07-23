@@ -111,3 +111,23 @@
 #' }
 #' @source Tabelas 9 e 11 da Nota Tecnica 57 do BCB (dezembro/2025).
 "series_sgs"
+
+#' Recorte de exemplo do IPCA (2015-2026)
+#'
+#' Saida de [get_ipca()] para o periodo de janeiro de 2015 a junho de 2026 --
+#' toda a estrutura POF 2017-2018 e o fim da anterior. Serve ao tutorial do
+#' pacote e a experimentacao sem depender da rede. O historico e suficiente
+#' para todos os nucleos, inclusive o DP, que exige janela de 48 meses.
+#'
+#' @format Tibble com uma linha por componente e mes:
+#' \describe{
+#'   \item{date}{mes de referencia}
+#'   \item{pof}{POF de referencia da estrutura do IPCA}
+#'   \item{codigo}{codigo estrutural do componente no IPCA}
+#'   \item{nivel}{nivel hierarquico: Geral, Grupo, Subgrupo, Item ou Subitem}
+#'   \item{rotulo}{nome do componente}
+#'   \item{variacao}{variacao mensal de precos, em porcentagem}
+#'   \item{peso}{peso mensal no indice, em porcentagem}
+#' }
+#' @source IPCA/SIDRA (IBGE), coletado via [get_ipca()].
+"ipca_exemplo"

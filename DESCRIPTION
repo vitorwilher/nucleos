@@ -2,11 +2,10 @@ Package: nucleos
 Title: Central Bank of Brazil Inflation Cores
 Version: 0.1.0
 Authors@R:
-    person(given = "Fernando",
-           family = "da Silva",
+    person(given = "Vítor",
+           family = "Wilher",
            role = c("aut", "cre"),
-           email = "fernando@fortietwo.com",
-           comment = c(ORCID = "0000-0002-7491-6930"))
+           email = "analisemacro.cloud@gmail.com")
 Description: Calculates the inflation cores and other analytical series derived
     from the IPCA, following the consolidated methodology published by the
     Central Bank of Brazil in Technical Note 57 (December 2025). Covers the 22
@@ -26,11 +25,16 @@ Imports:
     tibble,
     tidyr
 Suggests:
+    ggplot2,
+    knitr,
+    pkgdown,
     readxl,
+    rmarkdown,
     testthat (>= 3.0.0)
+VignetteBuilder: knitr
 Config/testthat/edition: 3
 Depends:
     R (>= 4.1)
-URL: https://github.com/vitorwilher/nucleos
+URL: https://github.com/vitorwilher/nucleos, https://vitorwilher.github.io/nucleos/
 BugReports: https://github.com/vitorwilher/nucleos/issues
 Config/roxygen2/version: 8.0.0

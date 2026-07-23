@@ -1,0 +1,42 @@
+url: https://vitorwilher.github.io/nucleos
+
+template:
+  bootstrap: 5
+  bslib:
+    primary: "#1B9E77"
+
+navbar:
+  structure:
+    left:  [intro, reference, news]
+    right: [github]
+
+reference:
+- title: Coleta de dados
+  desc: Baixar o IPCA do SIDRA e as séries oficiais do SGS.
+  contents:
+  - get_ipca
+  - get_sgs
+
+- title: Agregações e núcleos de exclusão
+  desc: Séries obtidas por agregação simples de componentes do IPCA.
+  contents:
+  - agregar
+
+- title: Núcleos de cálculo direto
+  desc: Médias aparadas, dupla ponderação, percentil 55 e difusão.
+  contents:
+  - core_ma
+  - core_ms
+  - core_dp
+  - core_p55
+  - difusao
+
+- title: Dados
+  desc: Vetores de agregação, estruturas, proxies e recorte de exemplo.
+  contents:
+  - ipca_exemplo
+  - ipca_vetores
+  - ipca_estruturas
+  - ipca_ms_itens
+  - ipca_proxies
+  - series_sgs

@@ -11,17 +11,17 @@ Calculates the inflation cores and other analytical series derived from the IPCA
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/analisemacropro/nucleos}
-  \item Report bugs at \url{https://github.com/analisemacropro/nucleos/issues}
+  \item \url{https://github.com/vitorwilher/nucleos}
+  \item Report bugs at \url{https://github.com/vitorwilher/nucleos/issues}
 }
 
 }
 \author{
-\strong{Maintainer}: Fernando da Silva \email{fernando@fortietwo.com} (\href{https://orcid.org/0000-0002-7491-6930}{ORCID})
+\strong{Maintainer}: Vítor Wilher \email{analisemacro.cloud@gmail.com}
 
 Authors:
 \itemize{
-  \item Fernando da Silva \email{fernando@fortietwo.com} (\href{https://orcid.org/0000-0002-7491-6930}{ORCID})
+  \item Vítor Wilher \email{analisemacro.cloud@gmail.com}
 }
 
 }

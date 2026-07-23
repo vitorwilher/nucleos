@@ -8,3 +8,7 @@
 paper/*.knit.md
 paper/*_files/
 paper/*.tex
+
+# Site pkgdown (publicado via CI no branch gh-pages)
+docs/
+README.html
