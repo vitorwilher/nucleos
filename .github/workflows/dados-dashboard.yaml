@@ -1,0 +1,45 @@
+# Atualiza os dados do dashboard de núcleos de inflação.
+#
+# Roda mensalmente, após a divulgação do IPCA (~dia 10), coleta e calcula as
+# séries com o pacote nucleos e publica o artefato compacto como asset de um
+# release fixo (tag "dashboard-dados"), de onde o app Shiny o lê.
+on:
+  schedule:
+    - cron: "0 9 12 * *"   # dia 12 de cada mês, 09:00 UTC
+  workflow_dispatch:
+
+name: dados-dashboard.yaml
+
+permissions:
+  contents: write
+
+jobs:
+  atualizar-dados:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: local::.
+          needs: website
+
+      - name: Gerar o artefato de dados
+        run: Rscript dashboard/gerar_dados.R
+
+      - name: Publicar o artefato no release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view dashboard-dados >/dev/null 2>&1 || \
+            gh release create dashboard-dados \
+              --title "Dados do dashboard (núcleos do IPCA)" \
+              --notes "Séries calculadas pelo pacote nucleos, atualizadas mensalmente. Consumidas pelo app Shiny."
+          gh release upload dashboard-dados \
+            dashboard/dados/series_nucleos.rds \
+            dashboard/dados/series_nucleos.csv \
+            --clobber

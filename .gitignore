@@ -12,3 +12,6 @@ paper/*.tex
 # Site pkgdown (publicado via CI no branch gh-pages)
 docs/
 README.html
+
+# Artefato do dashboard (publicado como release asset pelo CI)
+dashboard/dados/
