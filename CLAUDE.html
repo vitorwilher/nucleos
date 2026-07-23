@@ -117,6 +117,16 @@
 <li>
 <strong>Fase 2 (próxima):</strong> app Shiny lendo o artefato; deploy no <strong>shinyapps.io</strong> (conta paga da Análise Macro para cliente; a gratuita do Vítor só p/ teste). Escopo do beta: tela-resumo, leque de núcleos, núcleo médio, difusão, tabela + download, rodapé de confiança (selo “reproduz o SGS”).</li>
 </ul></div>
+<div class="section level2">
+<h2 id="mcp-dos-núcleos-planejado">MCP dos núcleos (planejado)<a class="anchor" aria-label="anchor" href="#mcp-dos-n%C3%BAcleos-planejado"></a></h2>
+<p>Direção para virar <strong>produto de consultoria</strong>: expor os núcleos como MCP que o Claude consome ao vivo (claude.ai / Claude Code). A camada de dados já existe (release <code>dashboard-dados</code>), então o MCP é <strong>fino</strong> — pode ser TS/Python, <strong>sem R dentro</strong>, lendo o artefato publicado.</p>
+<ul><li>
+<strong>Local (stdio)</strong> primeiro, para o próprio Vítor: não é operar serviço, roda sob demanda. <strong>Remoto (hosted + auth)</strong> depois, para clientes: aí sim é operar um serviço — mas <strong>magro</strong> (dado quase estático, atualiza 1x/mês), então dá para rodar <strong>serverless</strong> (Cloudflare Workers / Lambda / Deno Deploy), custo ocioso perto de zero.</li>
+<li>
+<strong>Tools previstas:</strong> <code>nucleos_ultimas()</code>, <code>nucleos_serie()</code>, <code>nucleos_comparar()</code>, <code>nucleos_listar()</code>, <code>nucleos_metadata()</code>, e um workflow tipo <code>panorama_inflacao()</code> (não só dado cru — entrega a leitura de conjuntura).</li>
+</ul><p><strong>Referências — MCPs de dados financeiros (pesquisa jul/2026).</strong> Todos são mercado global/US (ações, fundamentos, filings); <strong>nenhum faz macro BR ou núcleos de inflação</strong> → nicho sem concorrente direto, forte para consultoria. - Financial Datasets (oficial, conecta via OAuth sem API key): <a href="https://github.com/financial-datasets/mcp-server" class="external-link uri">https://github.com/financial-datasets/mcp-server</a> - Alpha Vantage (protótipo; free 25 req/dia), Polygon (real-time, pago), Finnhub (free 60 req/min) - EODHD (prompt templates que encadeiam tools, ex. <code>analyze_stock</code>): <a href="https://eodhd.com/financial-apis/mcp-server-for-financial-data-by-eodhd" class="external-link uri">https://eodhd.com/financial-apis/mcp-server-for-financial-data-by-eodhd</a> - Financial Modeling Prep (250+ tools): <a href="https://site.financialmodelingprep.com/developer/docs/mcp-server" class="external-link uri">https://site.financialmodelingprep.com/developer/docs/mcp-server</a> - Yahoo Finance (grátis, não-oficial, instável): <a href="https://mcpservers.org/servers/atishayjn/yfinance-mcp" class="external-link uri">https://mcpservers.org/servers/atishayjn/yfinance-mcp</a> - FinancialData.Net: <a href="https://financialdata.net/mcp-server" class="external-link uri">https://financialdata.net/mcp-server</a> - FactSet — plug-ins enterprise com a Anthropic (fev/2026) - Diretórios: mcpservers.org, pulsemcp.com</p>
+<p><strong>Padrões a copiar:</strong> conexão sem fricção (OAuth, sem chave para colar); tools que entregam <em>workflows</em>, não só dado cru; free tier como isca (o produto é o pago).</p>
+</div>
 </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
