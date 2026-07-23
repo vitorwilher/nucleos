@@ -7,8 +7,18 @@ template:
 
 navbar:
   structure:
-    left:  [intro, reference, news]
+    left:  [tutorial, reference, news]
     right: [github]
+  components:
+    tutorial:
+      text: Tutorial
+      href: articles/nucleos.html
+    reference:
+      text: Referência
+      href: reference/index.html
+    news:
+      text: Novidades
+      href: news/index.html
 
 reference:
 - title: Coleta de dados

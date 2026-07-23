@@ -53,8 +53,9 @@ oficial <- get_sgs(11426, inicio = "2015-01")   # núcleo MA oficial
 ```
 
 O pacote inclui `ipca_exemplo`, um recorte de 2015–2026 para
-experimentar sem depender da rede. Veja o tutorial em *Get started* para
-uma introdução aos núcleos com gráficos.
+experimentar sem depender da rede. Veja o
+[tutorial](https://vitorwilher.github.io/nucleos/articles/nucleos.html)
+para uma introdução aos núcleos com gráficos.
 
 ## Séries e funções
 
