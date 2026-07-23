@@ -106,7 +106,13 @@ Produto: monitor dos núcleos do IPCA, atualizado mensalmente. Arquitetura:
   Escopo do beta: tela-resumo, leque de núcleos, núcleo médio, difusão,
   tabela + download, rodapé de confiança (selo "reproduz o SGS").
 
-## MCP dos núcleos (planejado)
+## MCP Análise Macro (planejado)
+
+Nome do produto: **MCP Análise Macro** — guarda-chuva de marca, não "MCP
+Núcleos". Estratégia: **nome amplo, entrega estreita**. v1 (beta) traz só os
+**núcleos do IPCA** (carro-chefe, dados prontos); depois expande módulo a módulo
+para outras séries da casa (Selic/COPOM, câmbio, atividade, fiscal, expectativas
+do Focus), virando "a inteligência macro do Brasil dentro do Claude".
 
 Direção para virar **produto de consultoria**: expor os núcleos como MCP que o
 Claude consome ao vivo (claude.ai / Claude Code). A camada de dados já existe
