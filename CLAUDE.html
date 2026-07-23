@@ -118,7 +118,8 @@
 <strong>Fase 2 (próxima):</strong> app Shiny lendo o artefato; deploy no <strong>shinyapps.io</strong> (conta paga da Análise Macro para cliente; a gratuita do Vítor só p/ teste). Escopo do beta: tela-resumo, leque de núcleos, núcleo médio, difusão, tabela + download, rodapé de confiança (selo “reproduz o SGS”).</li>
 </ul></div>
 <div class="section level2">
-<h2 id="mcp-dos-núcleos-planejado">MCP dos núcleos (planejado)<a class="anchor" aria-label="anchor" href="#mcp-dos-n%C3%BAcleos-planejado"></a></h2>
+<h2 id="mcp-análise-macro-planejado">MCP Análise Macro (planejado)<a class="anchor" aria-label="anchor" href="#mcp-an%C3%A1lise-macro-planejado"></a></h2>
+<p>Nome do produto: <strong>MCP Análise Macro</strong> — guarda-chuva de marca, não “MCP Núcleos”. Estratégia: <strong>nome amplo, entrega estreita</strong>. v1 (beta) traz só os <strong>núcleos do IPCA</strong> (carro-chefe, dados prontos); depois expande módulo a módulo para outras séries da casa (Selic/COPOM, câmbio, atividade, fiscal, expectativas do Focus), virando “a inteligência macro do Brasil dentro do Claude”.</p>
 <p>Direção para virar <strong>produto de consultoria</strong>: expor os núcleos como MCP que o Claude consome ao vivo (claude.ai / Claude Code). A camada de dados já existe (release <code>dashboard-dados</code>), então o MCP é <strong>fino</strong> — pode ser TS/Python, <strong>sem R dentro</strong>, lendo o artefato publicado.</p>
 <ul><li>
 <strong>Local (stdio)</strong> primeiro, para o próprio Vítor: não é operar serviço, roda sob demanda. <strong>Remoto (hosted + auth)</strong> depois, para clientes: aí sim é operar um serviço — mas <strong>magro</strong> (dado quase estático, atualiza 1x/mês), então dá para rodar <strong>serverless</strong> (Cloudflare Workers / Lambda / Deno Deploy), custo ocioso perto de zero.</li>
