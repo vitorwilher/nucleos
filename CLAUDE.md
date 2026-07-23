@@ -105,3 +105,40 @@ Produto: monitor dos núcleos do IPCA, atualizado mensalmente. Arquitetura:
   (conta paga da Análise Macro para cliente; a gratuita do Vítor só p/ teste).
   Escopo do beta: tela-resumo, leque de núcleos, núcleo médio, difusão,
   tabela + download, rodapé de confiança (selo "reproduz o SGS").
+
+## MCP dos núcleos (planejado)
+
+Direção para virar **produto de consultoria**: expor os núcleos como MCP que o
+Claude consome ao vivo (claude.ai / Claude Code). A camada de dados já existe
+(release `dashboard-dados`), então o MCP é **fino** — pode ser TS/Python,
+**sem R dentro**, lendo o artefato publicado.
+
+- **Local (stdio)** primeiro, para o próprio Vítor: não é operar serviço, roda
+  sob demanda. **Remoto (hosted + auth)** depois, para clientes: aí sim é operar
+  um serviço — mas **magro** (dado quase estático, atualiza 1x/mês), então dá
+  para rodar **serverless** (Cloudflare Workers / Lambda / Deno Deploy), custo
+  ocioso perto de zero.
+- **Tools previstas:** `nucleos_ultimas()`, `nucleos_serie()`,
+  `nucleos_comparar()`, `nucleos_listar()`, `nucleos_metadata()`, e um workflow
+  tipo `panorama_inflacao()` (não só dado cru — entrega a leitura de conjuntura).
+
+**Referências — MCPs de dados financeiros (pesquisa jul/2026).** Todos são
+mercado global/US (ações, fundamentos, filings); **nenhum faz macro BR ou
+núcleos de inflação** → nicho sem concorrente direto, forte para consultoria.
+- Financial Datasets (oficial, conecta via OAuth sem API key):
+  https://github.com/financial-datasets/mcp-server
+- Alpha Vantage (protótipo; free 25 req/dia), Polygon (real-time, pago),
+  Finnhub (free 60 req/min)
+- EODHD (prompt templates que encadeiam tools, ex. `analyze_stock`):
+  https://eodhd.com/financial-apis/mcp-server-for-financial-data-by-eodhd
+- Financial Modeling Prep (250+ tools):
+  https://site.financialmodelingprep.com/developer/docs/mcp-server
+- Yahoo Finance (grátis, não-oficial, instável):
+  https://mcpservers.org/servers/atishayjn/yfinance-mcp
+- FinancialData.Net: https://financialdata.net/mcp-server
+- FactSet — plug-ins enterprise com a Anthropic (fev/2026)
+- Diretórios: mcpservers.org, pulsemcp.com
+
+**Padrões a copiar:** conexão sem fricção (OAuth, sem chave para colar); tools
+que entregam *workflows*, não só dado cru; free tier como isca (o produto é o
+pago).
