@@ -31,6 +31,6 @@ Suggests:
 Config/testthat/edition: 3
 Depends:
     R (>= 4.1)
-URL: https://github.com/analisemacropro/nucleos
-BugReports: https://github.com/analisemacropro/nucleos/issues
+URL: https://github.com/vitorwilher/nucleos
+BugReports: https://github.com/vitorwilher/nucleos/issues
 Config/roxygen2/version: 8.0.0
