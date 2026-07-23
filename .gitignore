@@ -3,3 +3,8 @@
 .Rdata
 .httr-oauth
 .DS_Store
+
+# Artefatos de render do Quarto
+paper/*.knit.md
+paper/*_files/
+paper/*.tex
