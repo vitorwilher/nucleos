@@ -7,3 +7,7 @@
 ^_pkgdown\.yml$
 ^docs$
 ^pkgdown$
+^data-raw$
+^paper$
+^Vetores_NT_57\.xlsx$
+^LICENSE\.md$

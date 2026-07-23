@@ -2,38 +2,55 @@
 % Please edit documentation in R/core_dp.R
 \name{core_dp}
 \alias{core_dp}
-\title{Computes core inflation using the double weight method}
+\title{Nucleo de dupla ponderacao (DP)}
 \usage{
-core_dp(data, change, weight, code, group, date)
+core_dp(data, janela = 48L)
 }
 \arguments{
-\item{data}{Dataframe object with inflation index and items data.}
+\item{data}{Tibble devolvido por \code{\link[=get_ipca]{get_ipca()}}, com historico suficiente.}
 
-\item{change}{A string with the column name of the percentage change of the inflation index and items.}
-
-\item{weight}{A string with the column name of the weight of the inflation index and items.}
-
-\item{code}{A string with the column name of the code of the inflation index and items as provided in \code{\link[=get_ipca]{get_ipca()}}.}
-
-\item{group}{A string with the column name of the group of the inflation index and items as provided in \code{\link[=group_desc]{group_desc()}}.}
-
-\item{date}{A string with the name of the date column.}
+\item{janela}{Numero de meses da janela de volatilidade. O padrao, \code{48}, e o
+valor adotado pelo BCB; alterar afasta o resultado da serie oficial.}
 }
 \value{
-Calculated core inflation tibble.
+Tibble com as colunas \code{date} e \code{variacao}.
 }
 \description{
-Computes core inflation using the double weight method
+Media ponderada das variacoes de precos dos itens do IPCA com pesos ajustados
+que reduzem a influencia dos itens mais volateis (Subsecao 2.2 da Nota
+Tecnica 57 do BCB). O ajuste combina dois ponderadores: o peso original do
+item no indice e o inverso da volatilidade de suas variacoes.
+}
+\details{
+O calculo tem tres etapas. Primeiro, para cada item, calcula-se o desvio
+padrao da serie de diferencas entre sua variacao mensal e a do IPCA cheio.
+Em seguida o peso original e dividido por esse desvio padrao. Por fim os
+pesos ajustados sao normalizados e aplicados as variacoes do mes.
+
+A janela de volatilidade cobre os \strong{48 meses anteriores} ao mes de
+referencia, sem inclui-lo: como diz a nota, o nucleo de um dado mes depende
+das variacoes "do proprio mes e dos 48 meses anteriores" -- a variacao
+corrente entra no nucleo, e os 48 meses previos estimam a volatilidade.
+
+O desvio padrao usa o estimador nao viesado, com denominador 47 -- e o que
+a funcao \code{\link[stats:sd]{stats::sd()}} ja faz para uma janela de 48 observacoes.
+
+O nucleo so pode ser calculado a partir do quadragesimo nono mes presente em
+\code{data}. Para obter o DP de um mes especifico, colete pelo menos 48 meses de
+historico adicional.
+
+Nos primeiros 48 meses de vigencia de uma estrutura, a janela de volatilidade
+alcanca a estrutura anterior. Itens sem correspondencia direta usam as proxies
+de \link{ipca_proxies}; o calculo e feito estrutura a estrutura para nao misturar
+historicos de codigos que mudaram de significado.
 }
 \examples{
 \dontrun{
-library(magrittr)
-
-ipca_dp <- get_ipca(period = "all") \%>\%
-group_desc() \%>\%
-core_dp(., "pct_change", "weight", "code", "group", "date")
+# Para o DP de 2024 em diante, colete a partir de 2020
+ipca <- get_ipca(inicio = "2020-01")
+core_dp(ipca)
 }
 }
-\author{
-Fernando da Silva <\href{mailto:fernando@fortietwo.com}{fernando@fortietwo.com}>
+\seealso{
+\code{\link[=core_ma]{core_ma()}}, \code{\link[=core_ms]{core_ms()}}, \link{ipca_proxies}
 }

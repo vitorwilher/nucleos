@@ -2,36 +2,41 @@
 % Please edit documentation in R/core_ma.R
 \name{core_ma}
 \alias{core_ma}
-\title{Computes core inflation using the non-smoothed trimmed means method}
+\title{Nucleo de medias aparadas sem suavizacao (MA)}
 \usage{
-core_ma(data, change, weight, date)
+core_ma(data)
 }
 \arguments{
-\item{data}{Dataframe object with inflation items data.}
-
-\item{change}{A string with the column name of the percentage change of the inflation items.}
-
-\item{weight}{A string with the column name of the weight of the inflation items.}
-
-\item{date}{A string with the name of the date column.}
+\item{data}{Tibble devolvido por \code{\link[=get_ipca]{get_ipca()}}.}
 }
 \value{
-Calculated core inflation tibble.
+Tibble com as colunas \code{date} e \code{variacao}.
 }
 \description{
-Computes core inflation using the non-smoothed trimmed means method
+Ordena os itens do IPCA pela variacao de precos, descarta as caudas ate que
+os pesos acumulados atinjam 20\% de cada lado e devolve a media ponderada das
+variacoes remanescentes (Subsecao 2.3 da Nota Tecnica 57 do BCB).
+}
+\details{
+Os itens que atravessam os limites de 20\% e 80\% nao entram nem saem por
+inteiro: entram com o peso correspondente apenas a fracao dentro da faixa,
+conforme a etapa (iv) da nota. Na pratica isso equivale a atribuir a cada
+item o peso
+
+\deqn{\tilde{w}_i = \min(W_i, 80) - \max(W_{i-1}, 20)}
+
+em que \eqn{W_i} e o peso acumulado ate o item \eqn{i}, descartando os itens
+para os quais essa expressao seja negativa ou nula.
+
+O calculo usa apenas os componentes de nivel \code{"Item"}; a filtragem e feita
+internamente.
 }
 \examples{
 \dontrun{
-library(magrittr)
-library(dplyr)
-
-ipca_ma <- get_ipca(period = "all") \%>\%
-group_desc() \%>\%
-dplyr::filter(group == "Item") \%>\%
-core_ma(., "pct_change", "weight", "date")
+ipca <- get_ipca(inicio = "2020-01")
+core_ma(ipca)
 }
 }
-\author{
-Fernando da Silva <\href{mailto:fernando@fortietwo.com}{fernando@fortietwo.com}>
+\seealso{
+\code{\link[=core_ms]{core_ms()}}, \code{\link[=core_p55]{core_p55()}}, \code{\link[=agregar]{agregar()}}
 }

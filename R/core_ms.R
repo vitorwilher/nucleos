@@ -1,93 +1,113 @@
-#' Computes core inflation using the smoothed trimmed means method
+#' Nucleo de medias aparadas com suavizacao (MS)
 #'
-#' @param data Dataframe object with inflation items data.
-#' @param change A string with the column name of the percentage change of the inflation items.
-#' @param weight A string with the column name of the weight of the inflation items.
-#' @param code A string with the column name of the code of the inflation items as provided in [get_ipca()].
-#' @param date A string with the name of the date column.
-#' @importFrom rlang .data
-#' @author Fernando da Silva <<fernando@fortietwo.com>>
+#' Segue exatamente as mesmas cinco etapas do nucleo MA. A diferenca esta nas
+#' variacoes usadas: para itens com reajustes infrequentes, a variacao do mes e
+#' substituida pela variacao media dos ultimos doze meses (Subsecao 2.4 da Nota
+#' Tecnica 57 do BCB).
 #'
-#' @return Calculated core inflation tibble.
+#' Os itens suavizados em cada estrutura do IPCA estao em [ipca_ms_itens]. Sao
+#' nove na estrutura vigente -- combustiveis, energia eletrica, transporte
+#' publico, servicos pessoais, fumo, cursos e comunicacao.
+#'
+#' Como a suavizacao olha doze meses para tras, o nucleo so pode ser calculado a
+#' partir do decimo segundo mes presente em `data`. Para obter o MS de um mes
+#' especifico, colete pelo menos onze meses de historico adicional.
+#'
+#' Nos primeiros onze meses de vigencia de uma estrutura, a janela de suavizacao
+#' alcanca a estrutura anterior. Itens sem correspondencia direta usam as proxies
+#' de [ipca_proxies]; o calculo e feito estrutura a estrutura para nao misturar
+#' historicos de codigos que mudaram de significado.
+#'
+#' @param data Tibble devolvido por [get_ipca()], com historico suficiente.
+#'
+#' @return Tibble com as colunas `date` e `variacao`.
 #' @export
+#'
+#' @seealso [core_ma()], [ipca_ms_itens], [ipca_proxies]
 #'
 #' @examples
 #' \dontrun{
-#' library(magrittr)
-#' library(dplyr)
-#'
-#' ipca_ms <- get_ipca(period = "all") %>%
-#' group_desc() %>%
-#' dplyr::filter(group == "Item") %>%
-#' core_ms(., "pct_change", "weight", "code", "date")
+#' # Para o MS de 2024 em diante, colete a partir de 2023
+#' ipca <- get_ipca(inicio = "2023-01")
+#' core_ms(ipca)
 #' }
-core_ms <- function(data, change, weight, code, date){
+core_ms <- function(data) {
 
-  df <- data
-  pc <- change
-  we <- weight
-  cd <- code
-  dt <- date
+  checa_ipca(data)
 
-  # Check if data is data frame
-  if(!is.data.frame(df)) {
-    rlang::abort("{data} must be a data frame.")
+  if (!"pof" %in% names(data)) {
+    rlang::abort("`data` precisa da coluna `pof`, devolvida por get_ipca().")
   }
 
-  # Check if inflation percent change column is present in dataset
-  if(!pc %in% colnames(df) | !rlang::is_double(df[[pc]])){
-    rlang::abort("The percent {change} column must be numeric and present in the dataset.")
+  itens <- dplyr::filter(data, .data$nivel == "Item")
+  itens <- desdobrar_bimestre_1991(itens)
+
+  partes <- lapply(estruturas_presentes(itens), function(S) {
+    ms_por_estrutura(itens, S)
+  })
+
+  res <- dplyr::bind_rows(partes)
+
+  if (nrow(res) == 0) {
+    rlang::abort(
+      "Historico insuficiente: o nucleo MS exige doze meses de dados por item."
+    )
   }
 
-  # Check if inflation weight column is present in dataset
-  if(!we %in% colnames(df) | !rlang::is_double(df[[we]])){
-    rlang::abort("Column of {weight} must be numeric and present in the dataset.")
-  }
+  dplyr::arrange(res, .data$date)
+}
 
-  # Check if inflation items code is presente in dataset
-  if(!cd %in% colnames(df) | !rlang::is_double(df[[cd]])) {
-    rlang::abort("Column of {code} must be numeric and present in the dataset.")
-  }
 
-  # Check if items to smooth is presente in dataset
-  if(
-    !all(
-      unique(c(ipca_classes_2012[["smoothed"]], ipca_classes_2020[["smoothed"]])) %in%
-      df[[cd]]
-      )
-    ){
-    rlang::abort("Items to smooth are not present in the dataset.")
-  }
+# Calcula o MS dos meses de uma unica estrutura, usando historico proprio
+# estendido com proxies para a suavizacao dos primeiros onze meses.
+ms_por_estrutura <- function(itens, S) {
 
-  # Check if date column is present in dataset
-  if(!dt %in% colnames(df) | !lubridate::is.Date(df[[dt]])){
-    rlang::abort("Column of {date} must be of class Date and be present in the dataset.")
-  }
+  itens_S <- dplyr::filter(itens, .data$pof == S)
 
-  # Inflation core data
-  ipca_core <- dplyr::tibble(
-    "date" = df[[dt]],
-    "pctc" = df[[pc]],
-    "weig" = df[[we]],
-    "code" = df[[cd]]
-  )
+  suavizados <- ipca_ms_itens$codigo[ipca_ms_itens$pof == S]
 
-  # Calculate inflation core
-  ipca_core <- ipca_core %>%
-    dplyr::group_by(.data$code) %>%
+  # Variacao suavizada por codigo, sobre o historico estendido (11 meses de
+  # alcance da estrutura anterior).
+  suave <- historico_com_proxy(itens, S, "MS", reach = 11L) |>
+    dplyr::group_by(.data$codigo) |>
+    dplyr::arrange(.data$date, .by_group = TRUE) |>
+    dplyr::mutate(suave = media_movel_geometrica(.data$variacao, n = 12)) |>
+    dplyr::ungroup() |>
+    dplyr::select("codigo", "date", "suave")
+
+  aug <- itens_S |>
+    dplyr::left_join(suave, by = c("codigo", "date")) |>
     dplyr::mutate(
-      new_pctc = dplyr::if_else(
-        .data$code %in% c(ipca_classes_2012[["smoothed"]], ipca_classes_2020[["smoothed"]]),
-        ((RcppRoll::roll_prodr((1 + (.data$pctc / 100)), n = 12) - 1) / 12) * 100,
-        .data$pctc
-        )
-      ) %>%
-    dplyr::group_by(.data$date) %>%
-    dplyr::filter(!any(is.na(.data$new_pctc))) %>%
-    dplyr::ungroup() %>%
-    core_ma(., "new_pctc", "weig", "date") %>%
-    dplyr::rename("core_ms" = 2)
+      eh_suavizado = .data$codigo %in% suavizados,
+      variacao_ms  = dplyr::if_else(.data$eh_suavizado, .data$suave, .data$variacao)
+    )
 
-  return(ipca_core)
+  # Meses em que algum item suavizado ainda nao tem doze observacoes nao podem
+  # ser calculados: descarta o mes inteiro.
+  incompletos <- aug |>
+    dplyr::filter(.data$eh_suavizado, is.na(.data$variacao_ms)) |>
+    dplyr::pull(.data$date) |>
+    unique()
 
+  aug <- dplyr::filter(aug, !.data$date %in% incompletos)
+  if (nrow(aug) == 0) return(NULL)
+
+  apara_medias(aug, "variacao_ms")
+}
+
+
+# Variacao media dos ultimos `n` meses, no sentido geometrico: a taxa mensal
+# constante que, composta por `n` meses, reproduz a variacao acumulada do
+# periodo. Devolve NA nos primeiros `n - 1` meses.
+media_movel_geometrica <- function(x, n = 12) {
+  # stats::filter() lanca erro, em vez de devolver NA, quando a serie e mais
+  # curta que a janela. Como historico curto e uma condicao normal aqui (os
+  # primeiros meses de qualquer coleta), trata-se o caso explicitamente.
+  if (length(x) < n) return(rep(NA_real_, length(x)))
+
+  log_fator <- log1p(x / 100)
+  soma <- as.numeric(
+    stats::filter(log_fator, rep(1, n), method = "convolution", sides = 1)
+  )
+  (exp(soma / n) - 1) * 100
 }

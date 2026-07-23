@@ -1,7 +1,9 @@
 utils::globalVariables(
   c(
     ".",
-    "ipca_classes_2012",
-    "ipca_classes_2020"
+    "ipca_estruturas",
+    "ipca_ms_itens",
+    "ipca_proxies",
+    "ipca_vetores"
     )
 )

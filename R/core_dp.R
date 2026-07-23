@@ -1,186 +1,120 @@
-#' Computes core inflation using the double weight method
+#' Nucleo de dupla ponderacao (DP)
 #'
-#' @param data Dataframe object with inflation index and items data.
-#' @param change A string with the column name of the percentage change of the inflation index and items.
-#' @param weight A string with the column name of the weight of the inflation index and items.
-#' @param code A string with the column name of the code of the inflation index and items as provided in [get_ipca()].
-#' @param group A string with the column name of the group of the inflation index and items as provided in [group_desc()].
-#' @param date A string with the name of the date column.
-#' @importFrom rlang .data
-#' @author Fernando da Silva <<fernando@fortietwo.com>>
+#' Media ponderada das variacoes de precos dos itens do IPCA com pesos ajustados
+#' que reduzem a influencia dos itens mais volateis (Subsecao 2.2 da Nota
+#' Tecnica 57 do BCB). O ajuste combina dois ponderadores: o peso original do
+#' item no indice e o inverso da volatilidade de suas variacoes.
 #'
-#' @return Calculated core inflation tibble.
+#' O calculo tem tres etapas. Primeiro, para cada item, calcula-se o desvio
+#' padrao da serie de diferencas entre sua variacao mensal e a do IPCA cheio.
+#' Em seguida o peso original e dividido por esse desvio padrao. Por fim os
+#' pesos ajustados sao normalizados e aplicados as variacoes do mes.
+#'
+#' A janela de volatilidade cobre os **48 meses anteriores** ao mes de
+#' referencia, sem inclui-lo: como diz a nota, o nucleo de um dado mes depende
+#' das variacoes "do proprio mes e dos 48 meses anteriores" -- a variacao
+#' corrente entra no nucleo, e os 48 meses previos estimam a volatilidade.
+#'
+#' O desvio padrao usa o estimador nao viesado, com denominador 47 -- e o que
+#' a funcao [stats::sd()] ja faz para uma janela de 48 observacoes.
+#'
+#' O nucleo so pode ser calculado a partir do quadragesimo nono mes presente em
+#' `data`. Para obter o DP de um mes especifico, colete pelo menos 48 meses de
+#' historico adicional.
+#'
+#' Nos primeiros 48 meses de vigencia de uma estrutura, a janela de volatilidade
+#' alcanca a estrutura anterior. Itens sem correspondencia direta usam as proxies
+#' de [ipca_proxies]; o calculo e feito estrutura a estrutura para nao misturar
+#' historicos de codigos que mudaram de significado.
+#'
+#' @param data Tibble devolvido por [get_ipca()], com historico suficiente.
+#' @param janela Numero de meses da janela de volatilidade. O padrao, `48`, e o
+#'   valor adotado pelo BCB; alterar afasta o resultado da serie oficial.
+#'
+#' @return Tibble com as colunas `date` e `variacao`.
 #' @export
+#'
+#' @seealso [core_ma()], [core_ms()], [ipca_proxies]
 #'
 #' @examples
 #' \dontrun{
-#' library(magrittr)
-#'
-#' ipca_dp <- get_ipca(period = "all") %>%
-#' group_desc() %>%
-#' core_dp(., "pct_change", "weight", "code", "group", "date")
+#' # Para o DP de 2024 em diante, colete a partir de 2020
+#' ipca <- get_ipca(inicio = "2020-01")
+#' core_dp(ipca)
 #' }
-core_dp <- function(data, change, weight, code, group, date){
+core_dp <- function(data, janela = 48L) {
 
-  df <- data
-  pc <- change
-  we <- weight
-  cd <- code
-  gp <- group
-  dt <- date
+  checa_ipca(data)
 
-  # Check if data is data frame
-  if(!is.data.frame(df)) {
-    rlang::abort("{data} must be a data frame.")
+  if (!"pof" %in% names(data)) {
+    rlang::abort("`data` precisa da coluna `pof`, devolvida por get_ipca().")
+  }
+  if (!"0" %in% data$codigo) {
+    rlang::abort("`data` nao contem o indice geral (codigo '0').")
   }
 
-  # Check if inflation percent change column is present in dataset
-  if(!pc %in% colnames(df) | !rlang::is_double(df[[pc]])){
-    rlang::abort("The percent {change} column must be numeric and present in the dataset.")
-  }
+  # O indice cheio, tambem tratado para ago-set/1991, e continuo entre
+  # estruturas -- serve de referencia para a volatilidade de todas elas.
+  data <- desdobrar_bimestre_1991(data)
+  ipca_cheio <- data |>
+    dplyr::filter(.data$codigo == "0") |>
+    dplyr::select("date", ipca = "variacao")
 
-  # Check if inflation weight column is present in dataset
-  if(!we %in% colnames(df) | !rlang::is_double(df[[we]])){
-    rlang::abort("Column of {weight} must be numeric and present in the dataset.")
-  }
+  itens <- dplyr::filter(data, .data$nivel == "Item")
 
-  # Check if inflation items code is presente in dataset
-  if(!cd %in% colnames(df) | !rlang::is_double(df[[cd]])) {
-    rlang::abort("Column of {code} must be numeric and present in the dataset.")
-  }
+  partes <- lapply(estruturas_presentes(itens), function(S) {
+    dp_por_estrutura(itens, S, ipca_cheio, janela)
+  })
 
-  # Check if inflation items group description is presente in dataset
-  if(!gp %in% colnames(df) | !rlang::is_character(df[[gp]])) {
-    rlang::abort("Column of {group} must be character and present in the dataset.")
-  }
+  dplyr::arrange(dplyr::bind_rows(partes), .data$date)
+}
 
-  # Check if date column is present in dataset
-  if(!dt %in% colnames(df) | !lubridate::is.Date(df[[dt]])){
-    rlang::abort("Column of {date} must be of class Date and be present in the dataset.")
-  }
 
-  # Inflation core data
-  ipca_core <- dplyr::tibble(
-    "date" = df[[dt]],
-    "pctch" = df[[pc]],
-    "weigh" = df[[we]],
-    "code"  = df[[cd]],
-    "group" = df[[gp]]
-  )
+# Calcula o DP dos meses de uma unica estrutura. A volatilidade de cada item usa
+# historico proprio estendido com proxies; os pesos e as variacoes do nucleo
+# vem dos meses reais da estrutura.
+dp_por_estrutura <- function(itens, S, ipca_cheio, janela) {
 
-  # Monthly percentage change in the inflation index (IPCA)
-  idx_change <- ipca_core %>%
-    dplyr::filter(group == "Geral") %>%
-    dplyr::select(date, "ipca" = .data$pctch)
+  itens_S <- dplyr::filter(itens, .data$pof == S)
 
-  idx_change <-  stats::ts(
-    data = idx_change$ipca,
-    start = c(
-      lubridate::year(dplyr::first(idx_change$date)),
-      lubridate::month(dplyr::first(idx_change$date))
-      ),
-    frequency = 12
+  vol <- historico_com_proxy(itens, S, "DP", reach = janela) |>
+    dplyr::left_join(ipca_cheio, by = "date") |>
+    dplyr::mutate(desvio = .data$variacao - .data$ipca) |>
+    dplyr::group_by(.data$codigo) |>
+    dplyr::arrange(.data$date, .by_group = TRUE) |>
+    dplyr::mutate(volatilidade = desvio_padrao_movel(.data$desvio, n = janela)) |>
+    dplyr::ungroup() |>
+    dplyr::select("codigo", "date", "volatilidade")
+
+  itens_S |>
+    dplyr::left_join(vol, by = c("codigo", "date")) |>
+    dplyr::filter(
+      !is.na(.data$volatilidade),
+      .data$volatilidade > 0,
+      !is.na(.data$variacao),
+      !is.na(.data$peso)
+    ) |>
+    dplyr::group_by(.data$date) |>
+    dplyr::mutate(peso_dp = .data$peso / .data$volatilidade) |>
+    dplyr::summarise(
+      variacao = stats::weighted.mean(.data$variacao, .data$peso_dp),
+      .groups  = "drop"
     )
-
-  # Monthly percentage change in inflation index items
-  items_change <- ipca_core %>%
-    dplyr::filter(group == "Item") %>%
-    tidyr::pivot_wider(
-      id_cols     = date,
-      names_from  = code,
-      values_from = .data$pctch
-      ) %>%
-    timetk::tk_ts(
-      select = -date,
-      start = c(
-        lubridate::year(dplyr::first(ipca_core$date)),
-        lubridate::month(dplyr::first(ipca_core$date))
-        ),
-      frequency = 12
-    )
-
-  # Monthly weight of inflation index items
-  items_weight <- ipca_core %>%
-    dplyr::filter(group == "Item") %>%
-    tidyr::pivot_wider(
-      id_cols     = date,
-      names_from  = code,
-      values_from = .data$weigh
-      ) %>%
-    timetk::tk_ts(
-      select = -date,
-      start = c(
-        lubridate::year(dplyr::first(ipca_core$date)),
-        lubridate::month(dplyr::first(ipca_core$date))
-        ),
-      frequency = 12
-    )
+}
 
 
-  # Calculate series of differences between item variation and index (IPCA) variation
-  items_diff <- items_change - idx_change
-  colnames(items_diff) <- colnames(items_change)
-
-  # Create a sequence of all the dates=
-  dates_df <- unique(ipca_core$date)
-
-  # Create an empty matrix of dim = dim(items_change)
-  dp_weight <- items_change * 0
-
-  roll <- 48
-
-  # Loop over rolling 48 months: Standard Deviation
-  for(i in nrow(items_diff):roll){
-
-    # Get rolling's starting year and month
-    start_year <- lubridate::year(dates_df[i - roll + 1])
-    start_mth <- lubridate::month(dates_df[i - roll + 1])
-
-    # Get rolling's ending year and month
-    end_year <- lubridate::year(dates_df[i])
-    end_mth <- lubridate::month(dates_df[i])
-
-    # Get rolling data
-    items_diff_roll <- stats::window(
-      items_diff,
-      start     = c(start_year, start_mth),
-      end       = c(end_year, end_mth),
-      frequency = 12
-      )
-
-    # Calculate standard deviations of the differences
-    std_dev <- apply(items_diff_roll, MARGIN = 2, FUN = stats::sd, na.rm = T)
-
-    # Calculate new weights
-    dp_weight[i,] <- ((1 / std_dev) / sum(1 / std_dev, na.rm = T)) * items_weight[i,]
-
+# Desvio padrao dos `n` valores que antecedem cada ponto, sem inclui-lo.
+# Devolve NA nos primeiros `n` meses e em janelas com dados faltantes.
+desvio_padrao_movel <- function(x, n = 48L) {
+  N <- length(x)
+  out <- rep(NA_real_, N)
+  for (i in seq_len(N)) {
+    fim <- i - 1L
+    ini <- fim - n + 1L
+    if (ini >= 1L) {
+      janela <- x[ini:fim]
+      if (!anyNA(janela)) out[i] <- stats::sd(janela)
+    }
   }
-
-  # Rebalance weights
-  dp_weight <- dp_weight / rowSums(dp_weight, na.rm = T)
-
-  # Remove first rolling rows from items_change
-  items_change <- stats::window(
-    items_change,
-    start = c(
-      lubridate::year(dates_df[roll + 1]),
-      lubridate::month(dates_df[roll + 1])
-    ),
-    frequency = 12
-    )
-
-  # Calculate inflation core
-  core <- stats::ts(
-    rowSums(dp_weight * items_change, na.rm = T),
-    start = stats::start(items_change),
-    frequency = 12
-    )
-
-  ipca_core_dp <- dplyr::tibble(
-    date = dates_df[dates_df >= dates_df[roll + 1]],
-    core_dp = as.vector(core) %>% round(2)
-  )
-
-  return(ipca_core_dp)
-
+  out
 }

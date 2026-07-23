@@ -2,38 +2,43 @@
 % Please edit documentation in R/core_ms.R
 \name{core_ms}
 \alias{core_ms}
-\title{Computes core inflation using the smoothed trimmed means method}
+\title{Nucleo de medias aparadas com suavizacao (MS)}
 \usage{
-core_ms(data, change, weight, code, date)
+core_ms(data)
 }
 \arguments{
-\item{data}{Dataframe object with inflation items data.}
-
-\item{change}{A string with the column name of the percentage change of the inflation items.}
-
-\item{weight}{A string with the column name of the weight of the inflation items.}
-
-\item{code}{A string with the column name of the code of the inflation items as provided in \code{\link[=get_ipca]{get_ipca()}}.}
-
-\item{date}{A string with the name of the date column.}
+\item{data}{Tibble devolvido por \code{\link[=get_ipca]{get_ipca()}}, com historico suficiente.}
 }
 \value{
-Calculated core inflation tibble.
+Tibble com as colunas \code{date} e \code{variacao}.
 }
 \description{
-Computes core inflation using the smoothed trimmed means method
+Segue exatamente as mesmas cinco etapas do nucleo MA. A diferenca esta nas
+variacoes usadas: para itens com reajustes infrequentes, a variacao do mes e
+substituida pela variacao media dos ultimos doze meses (Subsecao 2.4 da Nota
+Tecnica 57 do BCB).
+}
+\details{
+Os itens suavizados em cada estrutura do IPCA estao em \link{ipca_ms_itens}. Sao
+nove na estrutura vigente -- combustiveis, energia eletrica, transporte
+publico, servicos pessoais, fumo, cursos e comunicacao.
+
+Como a suavizacao olha doze meses para tras, o nucleo so pode ser calculado a
+partir do decimo segundo mes presente em \code{data}. Para obter o MS de um mes
+especifico, colete pelo menos onze meses de historico adicional.
+
+Nos primeiros onze meses de vigencia de uma estrutura, a janela de suavizacao
+alcanca a estrutura anterior. Itens sem correspondencia direta usam as proxies
+de \link{ipca_proxies}; o calculo e feito estrutura a estrutura para nao misturar
+historicos de codigos que mudaram de significado.
 }
 \examples{
 \dontrun{
-library(magrittr)
-library(dplyr)
-
-ipca_ms <- get_ipca(period = "all") \%>\%
-group_desc() \%>\%
-dplyr::filter(group == "Item") \%>\%
-core_ms(., "pct_change", "weight", "code", "date")
+# Para o MS de 2024 em diante, colete a partir de 2023
+ipca <- get_ipca(inicio = "2023-01")
+core_ms(ipca)
 }
 }
-\author{
-Fernando da Silva <\href{mailto:fernando@fortietwo.com}{fernando@fortietwo.com}>
+\seealso{
+\code{\link[=core_ma]{core_ma()}}, \link{ipca_ms_itens}, \link{ipca_proxies}
 }
