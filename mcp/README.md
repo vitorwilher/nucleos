@@ -80,6 +80,10 @@ endpoint do conector).
 
 ## Conectar (o que você manda para a sua rede)
 
+> Para divulgar, use o **[INSTALAR.md](INSTALAR.md)** — mesmo conteúdo escrito
+> para quem não é desenvolvedor, cobrindo Claude, Claude Code, Cursor e Codex.
+> O que segue aqui é a versão técnica.
+
 O servidor é **authless** e fala **Streamable HTTP**, o transporte que os três
 clientes abaixo suportam nativamente por URL — ninguém precisa instalar ponte
 (`mcp-remote`), colar chave nem logar. Em todos, a URL é a mesma, terminada
