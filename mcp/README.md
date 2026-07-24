@@ -80,9 +80,10 @@ endpoint do conector).
 
 ## Conectar (o que você manda para a sua rede)
 
-> Para divulgar, use o **[INSTALAR.md](INSTALAR.md)** — mesmo conteúdo escrito
-> para quem não é desenvolvedor, cobrindo Claude, Claude Code, Cursor e Codex.
-> O que segue aqui é a versão técnica.
+> Para divulgar, use a página **[Conectar com
+> IA](https://vitorwilher.github.io/nucleos/articles/conectar-ia.html)** —
+> mesmo conteúdo escrito para quem não é desenvolvedor, cobrindo Claude,
+> Claude Code, Cursor e Codex. O que segue aqui é a versão técnica.
 
 O servidor é **authless** e fala **Streamable HTTP**, o transporte que os três
 clientes abaixo suportam nativamente por URL — ninguém precisa instalar ponte
