@@ -40,6 +40,12 @@ function resolveSerie(q: string): string | null {
   return parciais.length === 1 ? parciais[0] : (parciais[0] ?? null);
 }
 
+// A difusão não é uma variação de preço e sim um *nível*: a proporção (%) de
+// itens do IPCA com variação positiva no mês. Compor essa série como se fosse
+// juros produz numeros sem sentido (tres meses ~60% "acumulariam" ~300%), entao
+// para ela reportamos a media do periodo, nao o acumulado composto.
+const ehNivel = (nome: string) => norm(nome) === "difusao";
+
 // Variação acumulada (composta) dos últimos n meses de uma série mensal (% a.m.).
 function acumulado(v: number[], n: number): number | null {
   if (v.length < n) return null;
@@ -47,6 +53,17 @@ function acumulado(v: number[], n: number): number | null {
   const fator = jan.reduce((acc, x) => acc * (1 + x / 100), 1);
   return Math.round((fator - 1) * 10000) / 100;
 }
+
+// Média simples dos últimos n meses — agregação correta para séries de nível.
+function media(v: number[], n: number): number | null {
+  if (v.length < n) return null;
+  const jan = v.slice(v.length - n);
+  return Math.round((jan.reduce((a, x) => a + x, 0) / n) * 100) / 100;
+}
+
+// Agrega os últimos n meses conforme a natureza da série.
+const agregado = (nome: string, v: number[], n: number) =>
+  ehNivel(nome) ? media(v, n) : acumulado(v, n);
 
 const fmt = (x: number | null) => (x === null ? "—" : x.toFixed(2));
 
@@ -111,8 +128,9 @@ export class NucleosMCP extends McpAgent {
           const n = s.v.length;
           const mm = s.v[n - 1];
           const acel = n >= 2 ? Math.round((mm - s.v[n - 2]) * 100) / 100 : null;
-          return `| ${nm} | ${fmt(mm)} | ${acel === null ? "—" : (acel > 0 ? "+" : "") + acel.toFixed(2)} | ${fmt(acumulado(s.v, 3))} | ${fmt(acumulado(s.v, 12))} |`;
+          return `| ${nm} | ${fmt(mm)} | ${acel === null ? "—" : (acel > 0 ? "+" : "") + acel.toFixed(2)} | ${fmt(agregado(nm, s.v, 3))} | ${fmt(agregado(nm, s.v, 12))} |`;
         });
+        const temNivel = ordenado.some(ehNivel);
         const txt = [
           `**IPCA — leituras de ${META.ultimo_mes}** (variação % ao mês)`,
           "",
@@ -120,8 +138,11 @@ export class NucleosMCP extends McpAgent {
           "|---|---:|---:|---:|---:|",
           ...linhas,
           "",
+          temNivel
+            ? "_A Difusão é a proporção (%) de itens com variação positiva no mês, não uma variação de preço: para ela, as colunas 3m/12m trazem a **média** do período, não o acumulado._"
+            : "",
           `_Fonte: ${META.fonte}. NT 57/BCB. Atualizado em ${META.atualizado_em}._`,
-        ].join("\n");
+        ].filter(Boolean).join("\n");
         return { content: [{ type: "text", text: txt }] };
       },
     );
@@ -157,14 +178,19 @@ export class NucleosMCP extends McpAgent {
         }
         const linhas = idx.map((i) => `| ${s.d[i]} | ${s.v[i].toFixed(2)} |`);
         const vv = idx.map((i) => s.v[i]);
+        const nivel = ehNivel(nome);
         const txt = [
-          `**${nome}** — variação % ao mês (${s.d[idx[0]]} a ${s.d[idx[idx.length - 1]]}, ${idx.length} meses)`,
+          nivel
+            ? `**${nome}** — % dos itens do IPCA com variação positiva (${s.d[idx[0]]} a ${s.d[idx[idx.length - 1]]}, ${idx.length} meses)`
+            : `**${nome}** — variação % ao mês (${s.d[idx[0]]} a ${s.d[idx[idx.length - 1]]}, ${idx.length} meses)`,
           "",
-          "| Mês | Var. (%) |",
+          nivel ? "| Mês | Itens em alta (%) |" : "| Mês | Var. (%) |",
           "|---|---:|",
           ...linhas,
           "",
-          `Acumulado no período: ${fmt(acumulado(vv, vv.length))}%.`,
+          nivel
+            ? `Média no período: ${fmt(media(vv, vv.length))}%. _A difusão é um nível, não uma variação de preço — não se acumula._`
+            : `Acumulado no período: ${fmt(acumulado(vv, vv.length))}%.`,
           `_NT 57/BCB. Atualizado em ${META.atualizado_em}._`,
         ].join("\n");
         return { content: [{ type: "text", text: txt }] };
@@ -198,8 +224,8 @@ export class NucleosMCP extends McpAgent {
           }
           const mm = s.v[j];
           const acel = j >= 1 ? Math.round((mm - s.v[j - 1]) * 100) / 100 : null;
-          const a3 = acumulado(s.v.slice(0, j + 1), 3);
-          const a12 = acumulado(s.v.slice(0, j + 1), 12);
+          const a3 = agregado(nm, s.v.slice(0, j + 1), 3);
+          const a12 = agregado(nm, s.v.slice(0, j + 1), 12);
           return `| ${nm} | ${s.d[j]} | ${fmt(mm)} | ${acel === null ? "—" : (acel > 0 ? "+" : "") + acel.toFixed(2)} | ${fmt(a3)} | ${fmt(a12)} |`;
         });
         const txt = [
@@ -209,6 +235,9 @@ export class NucleosMCP extends McpAgent {
           "|---|---|---:|---:|---:|---:|",
           ...linhas,
           "",
+          nomes.some(ehNivel)
+            ? "_A Difusão é a proporção (%) de itens com variação positiva no mês, não uma variação de preço: para ela, as colunas 3m/12m trazem a **média** do período. Não é comparável em nível com as demais séries._"
+            : "",
           `_NT 57/BCB. Atualizado em ${META.atualizado_em}._`,
         ].filter(Boolean).join("\n");
         return { content: [{ type: "text", text: txt }] };
