@@ -54,16 +54,18 @@ npm run deploy              # publica e imprime a URL pública
 O `npm run check` valida o bundle inteiro (~391 KB gzip, folgado no limite de
 3 MB do plano gratuito) sem tocar na sua conta — rode antes de qualquer deploy.
 
-O deploy imprime algo como:
+## URL pública
+
+O servidor está no ar em:
 
 ```
-https://nucleos-mcp.<seu-subdominio>.workers.dev
+https://nucleos-mcp.analisemacro.workers.dev
 ```
 
-O endpoint MCP é essa URL **+ `/mcp`**:
+**O endpoint MCP — o que você cola nos clientes — é essa URL + `/mcp`:**
 
 ```
-https://nucleos-mcp.<seu-subdominio>.workers.dev/mcp
+https://nucleos-mcp.analisemacro.workers.dev/mcp
 ```
 
 Abra a URL raiz no navegador para um health-check (mostra o último mês e o
@@ -93,7 +95,7 @@ Em `~/.cursor/mcp.json` (global) ou `.cursor/mcp.json` (só no projeto):
 {
   "mcpServers": {
     "nucleos-ipca": {
-      "url": "https://nucleos-mcp.<seu-subdominio>.workers.dev/mcp"
+      "url": "https://nucleos-mcp.analisemacro.workers.dev/mcp"
     }
   }
 }
@@ -105,7 +107,7 @@ Em `~/.codex/config.toml` (global) ou `.codex/config.toml` (só no projeto):
 
 ```toml
 [mcp_servers.nucleos_ipca]
-url = "https://nucleos-mcp.<seu-subdominio>.workers.dev/mcp"
+url = "https://nucleos-mcp.analisemacro.workers.dev/mcp"
 ```
 
 > `codex mcp add` serve para servidores stdio; para servidor remoto por URL,
