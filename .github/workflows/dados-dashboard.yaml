@@ -2,7 +2,8 @@
 #
 # Roda mensalmente, após a divulgação do IPCA (~dia 10), coleta e calcula as
 # séries com o pacote nucleos e publica o artefato compacto como asset de um
-# release fixo (tag "dashboard-dados"), de onde o app Shiny o lê.
+# release fixo (tag "dashboard-dados"). O app Shiny lê o .rds; o MCP Worker lê
+# o .json e se atualiza sem re-deploy.
 on:
   schedule:
     - cron: "0 9 12 * *"   # dia 12 de cada mês, 09:00 UTC
@@ -25,7 +26,7 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: local::.
+          extra-packages: local::., any::jsonlite
           needs: website
 
       - name: Gerar o artefato de dados
@@ -38,8 +39,9 @@ jobs:
           gh release view dashboard-dados >/dev/null 2>&1 || \
             gh release create dashboard-dados \
               --title "Dados do dashboard (núcleos do IPCA)" \
-              --notes "Séries calculadas pelo pacote nucleos, atualizadas mensalmente. Consumidas pelo app Shiny."
+              --notes "Séries calculadas pelo pacote nucleos, atualizadas mensalmente. Consumidas pelo app Shiny (.rds) e pelo MCP Worker (.json)."
           gh release upload dashboard-dados \
             dashboard/dados/series_nucleos.rds \
             dashboard/dados/series_nucleos.csv \
+            dashboard/dados/series_nucleos.json \
             --clobber

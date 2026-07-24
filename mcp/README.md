@@ -15,9 +15,10 @@ os núcleos ao vivo — sem instalar nada, sem chave.
 
 ## Arquitetura
 
-- **Dados embutidos.** `src/data.json` é um snapshot pré-calculado (23 séries,
-  2000–2026) gerado a partir do artefato do dashboard. O Worker **não coleta
-  SIDRA nem roda R** — só lê o snapshot. Atualização é por re-deploy mensal.
+- **Dados do release.** O Worker busca `series_nucleos.json` no release
+  `dashboard-dados` em runtime (cache de 6h) e se atualiza sozinho pelo workflow
+  mensal — **sem re-deploy**. `src/data.json` (23 séries, 2000–2026) fica embutido
+  só como **fallback** se o fetch falhar. O Worker **não coleta SIDRA nem roda R**.
 - **Cloudflare Workers** (authless, Streamable HTTP). Custo ocioso ~zero.
 - Rotas: `POST /mcp` (Streamable HTTP, use esta no Claude.ai) e `/sse` (legado).
 
@@ -163,16 +164,23 @@ npm run typecheck      # tsc --noEmit
 Inspecione com o MCP Inspector: `npx @modelcontextprotocol/inspector`, apontando
 para `http://localhost:8787/mcp` (transporte Streamable HTTP).
 
-## Atualizar os dados (mensal)
+## Atualizar os dados — automático
 
-O snapshot é regenerado a partir do artefato do dashboard:
+O Worker **busca `series_nucleos.json` no release `dashboard-dados`** em tempo de
+execução (cache de 6h por isolate). O workflow mensal `dados-dashboard.yaml`
+regenera esse asset após a divulgação do IPCA, então **o MCP se atualiza sozinho,
+sem re-deploy**.
+
+O `src/data.json` embutido no bundle é apenas o **fallback**: se o fetch ao
+GitHub falhar, o Worker responde com ele em vez de quebrar. Para refrescar o
+fallback (opcional, só evita que ele envelheça):
 
 ```bash
 # a partir da raiz do repositório, com o artefato em dashboard/dados/
-Rscript --vanilla mcp/gerar_snapshot.R   # gera mcp/src/data.json
+Rscript --vanilla mcp/gerar_snapshot.R   # regenera mcp/src/data.json
 cd mcp && npm run deploy
 ```
 
-> Evolução prevista (Fase 2 do MCP): em vez de embutir, o Worker faz `fetch` do
-> asset JSON do release `dashboard-dados`, atualizando sozinho pelo workflow
-> mensal. Ver `CLAUDE.md` → "MCP Análise Macro".
+> **Ativar o auto-update pela primeira vez.** O asset `.json` passa a existir no
+> release a partir da próxima execução do workflow. Para não esperar o dia 12,
+> dispare-o uma vez: `gh workflow run dados-dashboard.yaml`.

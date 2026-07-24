@@ -1,9 +1,9 @@
 // MCP Análise Macro — v1 (núcleos do IPCA)
 //
 // Servidor MCP remoto e *authless* que expõe as séries analíticas do IPCA
-// (Nota Técnica 57 do BCB) calculadas pelo pacote R `nucleos`. Os dados são um
-// snapshot pré-calculado embutido (src/data.json); o Worker não coleta SIDRA
-// nem roda R. Para atualizar, regenere o snapshot e re-deploye.
+// (Nota Técnica 57 do BCB) calculadas pelo pacote R `nucleos`. O Worker busca o
+// artefato pré-calculado no release `dashboard-dados` (atualizado mensalmente),
+// com src/data.json embutido apenas como fallback; não coleta SIDRA nem roda R.
 //
 // Rotas: POST /mcp (Streamable HTTP) e /sse (legado). Adicione a URL .../mcp
 // como "custom connector" no Claude.ai.
@@ -11,15 +11,68 @@
 import { McpAgent } from "agents/mcp";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import snapshot from "./data.json";
+import fallback from "./data.json";
 
 // --- Dados -----------------------------------------------------------------
 
 type Serie = { d: string[]; v: number[] };
-const SERIES = snapshot.series as Record<string, Serie>;
-const META = snapshot.metadata;
-const NOMES = Object.keys(SERIES);
-const NUCLEOS = NOMES.filter((n) => n.startsWith("Núcleo"));
+type Meta = {
+  atualizado_em: string;
+  ultimo_mes: string;
+  n_series: number;
+  fonte: string;
+  metodologia: string;
+};
+type Snapshot = { metadata: Meta; series: Record<string, Serie> };
+
+// Fonte viva: o mesmo artefato JSON que o workflow mensal publica no release
+// `dashboard-dados`. O snapshot embutido (import acima) é só o fallback para
+// quando o fetch falha — assim o Worker se atualiza sozinho, sem re-deploy.
+const DATA_URL =
+  "https://github.com/vitorwilher/nucleos/releases/download/dashboard-dados/series_nucleos.json";
+const TTL_MS = 6 * 60 * 60 * 1000; // revalida no máximo a cada 6h por isolate
+
+let cache: { at: number; data: Snapshot } | null = null;
+
+async function loadData(): Promise<Snapshot> {
+  const now = Date.now();
+  if (cache && now - cache.at < TTL_MS) return cache.data;
+  try {
+    const res = await fetch(DATA_URL, {
+      cf: { cacheTtl: 3600, cacheEverything: true },
+    });
+    if (res.ok) {
+      const data = (await res.json()) as Snapshot;
+      if (data?.series && data?.metadata) {
+        cache = { at: now, data };
+        return data;
+      }
+    }
+  } catch {
+    // GitHub/rede indisponível — cai no fallback abaixo.
+  }
+  // Preserva o último bom; se nunca houve, usa o snapshot embutido no bundle.
+  if (!cache) cache = { at: now, data: fallback as Snapshot };
+  return cache.data;
+}
+
+// Visão derivada do snapshot corrente, recalculada a cada chamada de tool.
+type View = {
+  SERIES: Record<string, Serie>;
+  META: Meta;
+  NOMES: string[];
+  NUCLEOS: string[];
+};
+async function view(): Promise<View> {
+  const d = await loadData();
+  const NOMES = Object.keys(d.series);
+  return {
+    SERIES: d.series,
+    META: d.metadata,
+    NOMES,
+    NUCLEOS: NOMES.filter((n) => n.startsWith("Núcleo")),
+  };
+}
 
 const norm = (s: string) =>
   s
@@ -30,7 +83,7 @@ const norm = (s: string) =>
 
 // Resolve um nome digitado (tolerante a acento/caixa/abreviação) para o nome
 // canônico da série. Ex.: "ms" -> "Núcleo MS", "ipca" -> "IPCA cheio".
-function resolveSerie(q: string): string | null {
+function resolveSerie(q: string, NOMES: string[]): string | null {
   const nq = norm(q);
   let hit = NOMES.find((n) => norm(n) === nq);
   if (hit) return hit;
@@ -106,6 +159,7 @@ export class NucleosMCP extends McpAgent {
       "Lista todas as séries analíticas do IPCA disponíveis (núcleos, agregações por segmento, difusão e IPCA cheio).",
       {},
       async () => {
+        const { NOMES, NUCLEOS } = await view();
         const txt = [
           `**${NOMES.length} séries disponíveis** (metodologia NT 57 do BCB).`,
           "",
@@ -123,9 +177,10 @@ export class NucleosMCP extends McpAgent {
       "Retorna a proveniência e o estado do conjunto de dados: última referência mensal, data de atualização, fonte, metodologia e há quanto tempo o snapshot foi gerado. Consulte antes de afirmar que um dado é o mais recente.",
       {},
       async () => {
-        // O snapshot é estático (embutido no Worker) e só muda por re-deploy.
-        // Calculamos a idade em tempo de execução para que uma versão esquecida
-        // no ar não passe por dado corrente.
+        const { META } = await view();
+        // Calculamos a idade do dado em tempo de execução: mesmo com a busca
+        // automática do release, uma divulgação recente do IBGE pode ainda não
+        // ter entrado no artefato, e não queremos que isso passe por corrente.
         const dias = Math.floor(
           (Date.now() - Date.parse(META.atualizado_em)) / 86_400_000,
         );
@@ -141,7 +196,7 @@ export class NucleosMCP extends McpAgent {
           `**Metodologia:** ${META.metodologia}`,
           alerta,
           "",
-          "_As séries reproduzem as oficiais do SGS/BCB até a 2ª casa decimal (de 1999 em diante). Os dados são um snapshot pré-calculado, atualizado por re-deploy — não uma consulta ao vivo ao SIDRA._",
+          "_As séries reproduzem as oficiais do SGS/BCB até a 2ª casa decimal (de 1999 em diante). Os dados são um artefato pré-calculado, atualizado mensalmente a partir do release — não uma consulta ao vivo ao SIDRA._",
         ].filter(Boolean).join("\n");
         return { content: [{ type: "text", text: txt }] };
       },
@@ -153,6 +208,7 @@ export class NucleosMCP extends McpAgent {
       "Últimas leituras de todas as séries no mês de referência: variação mensal (%), aceleração vs. o mês anterior (p.p.) e acumulados em 3 e 12 meses. Use para um panorama rápido.",
       { apenas_nucleos: z.boolean().optional().describe("Se true, restringe aos 9 núcleos + IPCA cheio.") },
       async ({ apenas_nucleos }) => {
+        const { SERIES, META, NOMES, NUCLEOS } = await view();
         const alvo = apenas_nucleos ? [...NUCLEOS, "IPCA cheio"] : NOMES;
         const ordenado = [
           ...NUCLEOS.filter((n) => alvo.includes(n)),
@@ -193,7 +249,8 @@ export class NucleosMCP extends McpAgent {
         ultimos: z.number().int().positive().optional().describe("Nº de meses mais recentes (ignora desde/ate)."),
       },
       async ({ serie, desde, ate, ultimos }) => {
-        const nome = resolveSerie(serie);
+        const { SERIES, META, NOMES } = await view();
+        const nome = resolveSerie(serie, NOMES);
         if (!nome) {
           return {
             content: [{ type: "text", text: `Série "${serie}" não encontrada. Use nucleos_listar para ver os nomes disponíveis.` }],
@@ -241,9 +298,10 @@ export class NucleosMCP extends McpAgent {
         mes: z.string().optional().describe("Mês de referência YYYY-MM (padrão: último disponível)."),
       },
       async ({ series, mes }) => {
+        const { SERIES, META, NOMES } = await view();
         const naoachou: string[] = [];
         const nomes = series.map((q) => {
-          const n = resolveSerie(q);
+          const n = resolveSerie(q, NOMES);
           if (!n) naoachou.push(q);
           return n;
         }).filter((n): n is string => n !== null);
@@ -284,7 +342,7 @@ export class NucleosMCP extends McpAgent {
 // --- Roteamento HTTP -------------------------------------------------------
 
 export default {
-  fetch(request: Request, env: unknown, ctx: ExecutionContext) {
+  async fetch(request: Request, env: unknown, ctx: ExecutionContext) {
     const url = new URL(request.url);
     if (url.pathname === "/mcp") {
       return NucleosMCP.serve("/mcp").fetch(request, env as never, ctx);
@@ -293,6 +351,7 @@ export default {
       return NucleosMCP.serveSSE("/sse").fetch(request, env as never, ctx);
     }
     if (url.pathname === "/" || url.pathname === "/health") {
+      const { META } = await view();
       return new Response(
         `MCP Análise Macro — Núcleos do IPCA (NT 57/BCB)\nÚltimo mês: ${META.ultimo_mes} | Atualizado: ${META.atualizado_em}\nConector MCP em: ${url.origin}/mcp`,
         { headers: { "content-type": "text/plain; charset=utf-8" } },

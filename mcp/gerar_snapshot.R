@@ -1,6 +1,10 @@
 #!/usr/bin/env Rscript
-# Gera o snapshot JSON embutido no Worker (mcp/src/data.json) a partir do
-# artefato do dashboard (dashboard/dados/series_nucleos.rds).
+# Regenera o snapshot de FALLBACK embutido no Worker (mcp/src/data.json) a
+# partir do artefato do dashboard (dashboard/dados/series_nucleos.rds).
+#
+# Em produção o Worker busca o mesmo JSON no release `dashboard-dados` e se
+# atualiza sozinho; este arquivo embutido só é usado se aquele fetch falhar.
+# Rode de vez em quando para o fallback não envelhecer.
 #
 # Rodar da raiz do repositório:
 #   Rscript --vanilla mcp/gerar_snapshot.R

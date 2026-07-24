@@ -8,6 +8,8 @@
 # Saídas (em dashboard/dados/):
 #   series_nucleos.rds  -- lista com series, conformidade e metadados (para o app)
 #   series_nucleos.csv  -- as séries em formato longo (portabilidade / download)
+#   series_nucleos.json -- snapshot compacto (metadata + séries d/v) que o MCP
+#                          Worker busca no release para se atualizar sozinho
 #
 # Variáveis de ambiente (opcionais):
 #   NUCLEOS_INICIO   primeiro mês coletado (padrão "1996-01"; DP precisa de 48m
@@ -19,6 +21,7 @@
 suppressMessages({
   library(nucleos)
   library(dplyr)
+  library(jsonlite)
 })
 
 inicio <- Sys.getenv("NUCLEOS_INICIO", "1996-01")
@@ -113,6 +116,34 @@ artefato <- list(
 dir.create("dashboard/dados", showWarnings = FALSE, recursive = TRUE)
 saveRDS(artefato, "dashboard/dados/series_nucleos.rds")
 utils::write.csv(series, "dashboard/dados/series_nucleos.csv", row.names = FALSE)
+
+# --- Snapshot JSON compacto para o MCP Worker --------------------------------
+# Mesmo formato que mcp/gerar_snapshot.R: séries em arrays paralelos d/v, valores
+# a 2 casas (a precisão em que reproduzem o SGS). O Worker busca este arquivo no
+# release e o mantém em cache, atualizando-se sem re-deploy.
+
+nomes_json <- sort(unique(series$serie))
+series_json <- lapply(nomes_json, function(nm) {
+  sub <- series[series$serie == nm, ]
+  sub <- sub[order(sub$date), ]
+  list(d = format(as.Date(sub$date), "%Y-%m"), v = round(sub$variacao, 2))
+})
+names(series_json) <- nomes_json
+
+json_out <- list(
+  metadata = list(
+    atualizado_em = as.character(metadata$atualizado_em),
+    ultimo_mes    = format(as.Date(metadata$ultimo_mes), "%Y-%m"),
+    n_series      = metadata$n_series,
+    fonte         = metadata$fonte,
+    metodologia   = metadata$metodologia
+  ),
+  series = series_json
+)
+writeLines(
+  jsonlite::toJSON(json_out, auto_unbox = TRUE, digits = 2),
+  "dashboard/dados/series_nucleos.json"
+)
 
 message("\n== Pronto ==")
 message("Atualizado em: ", metadata$atualizado_em,
