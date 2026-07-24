@@ -71,6 +71,13 @@ https://nucleos-mcp.analisemacro.workers.dev/mcp
 Abra a URL raiz no navegador para um health-check (mostra o último mês e o
 endpoint do conector).
 
+> **`/mcp` não abre no navegador — e isso é o correto.** Ao acessá-la direto,
+> você recebe `Not Acceptable: Client must accept text/event-stream`. É o
+> servidor dizendo que o navegador não fala o protocolo MCP: ele não envia o
+> header `Accept: text/event-stream` que o Streamable HTTP exige. Quem envia é
+> o cliente MCP (Claude, Cursor, Codex), e para esses a mesma URL responde
+> 200. Para conferir no navegador que o servidor está vivo, use a **raiz**.
+
 ## Conectar (o que você manda para a sua rede)
 
 O servidor é **authless** e fala **Streamable HTTP**, o transporte que os três
