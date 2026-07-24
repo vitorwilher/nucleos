@@ -87,9 +87,21 @@ em `/mcp`.
 
 ### Claude (claude.ai e Claude Desktop)
 
-1. **Configurações → Connectors → Adicionar conector personalizado**.
-2. Cole a URL terminada em `/mcp`.
-3. Salvar. As ferramentas `nucleos_*` ficam disponíveis no chat.
+**Configurações → Connectors → Adicionar conector personalizado**, e preencha:
+
+| Campo | Valor |
+|---|---|
+| Nome | `MCP Análise Macro — Núcleos de Inflação Brasil` |
+| URL do servidor MCP remoto | `https://nucleos-mcp.analisemacro.workers.dev/mcp` |
+| ID do Cliente OAuth | *(vazio)* |
+| Client Secret OAuth | *(vazio)* |
+
+Os campos de OAuth ficam vazios: o servidor é authless. Salvo, as ferramentas
+`nucleos_*` aparecem no chat.
+
+> O formulário pede o **nome antes da URL**, então o cliente não tem como
+> sugeri-lo — ele ainda não falou com o servidor. Copie o nome da tabela para
+> manter o rótulo consistente entre as pessoas.
 
 > Funciona em **todos os planos** (Free inclusive — o Free permite 1 conector
 > personalizado).
