@@ -76,7 +76,7 @@ export class NucleosMCP extends McpAgent {
       // o nome legivel que os clientes usam na interface e sugerem ao cadastrar
       // o conector -- sem ele, o usuario precisa inventar um rotulo na mao.
       name: "nucleos-ipca",
-      title: "MCP Núcleos de Inflação — Brasil",
+      title: "MCP Análise Macro — Núcleos de Inflação Brasil",
       version: "1.0.0",
     },
     {
