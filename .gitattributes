@@ -1,0 +1,14 @@
+# Normaliza line endings: LF no repositorio, qualquer que seja a maquina.
+# Sem isto, alternar entre Mac e Windows reapresenta o repo inteiro como
+# "modificado" e mascara mudancas reais.
+* text=auto eol=lf
+
+# Binarios: nunca converter.
+*.rds binary
+*.xlsx binary
+*.png binary
+*.jpg binary
+*.pdf binary
+*.ico binary
+*.woff binary
+*.woff2 binary

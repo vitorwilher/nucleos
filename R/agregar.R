@@ -104,8 +104,16 @@ checa_ipca <- function(data) {
 
 # Aceita o nome da serie com ou sem acentuacao, para nao obrigar o usuario a
 # digitar "Nao comercializaveis" exatamente como aparece no anexo do BCB.
+#
+# A transliteracao usa chartr com tabela explicita em vez de
+# iconv(to = "ASCII//TRANSLIT") porque o iconv depende da implementacao da
+# plataforma: no glibc (Linux) "Nucleo" sai como esperado, mas no macOS o
+# acento vira apostrofo ("N'ucleo") e o casamento falha. A tabela abaixo cobre
+# a acentuacao do portugues e se comporta igual em qualquer sistema.
 casa_serie <- function(serie, disponiveis) {
-  chave <- function(x) tolower(iconv(x, to = "ASCII//TRANSLIT"))
+  de   <- "áàâãäéèêëíìîïóòôõöúùûüçÁÀÂÃÄÉÈÊËÍÌÎÏÓÒÔÕÖÚÙÛÜÇ"
+  para <- "aaaaaeeeeiiiiooooouuuucAAAAAEEEEIIIIOOOOOUUUUC"
+  chave <- function(x) tolower(chartr(de, para, x))
   idx <- match(chave(serie), chave(disponiveis))
   if (is.na(idx)) {
     rlang::abort(paste0(
