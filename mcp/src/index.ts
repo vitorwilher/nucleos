@@ -70,10 +70,34 @@ const fmt = (x: number | null) => (x === null ? "—" : x.toFixed(2));
 // --- Servidor MCP ----------------------------------------------------------
 
 export class NucleosMCP extends McpAgent {
-  server = new McpServer({
-    name: "MCP Análise Macro — Núcleos do IPCA",
-    version: "1.0.0",
-  });
+  server = new McpServer(
+    {
+      // `name` e o identificador programatico (estavel, sem acento); `title` e
+      // o nome legivel que os clientes usam na interface e sugerem ao cadastrar
+      // o conector -- sem ele, o usuario precisa inventar um rotulo na mao.
+      name: "nucleos-ipca",
+      title: "MCP Núcleos de Inflação — Brasil",
+      version: "1.0.0",
+    },
+    {
+      // Enviado ao cliente no handshake: orienta o modelo sobre o que este
+      // servidor cobre e sobre as duas armadilhas do dominio (a unidade da
+      // difusao e a natureza estatica do snapshot).
+      instructions: [
+        "Servidor das séries analíticas do IPCA (Banco Central do Brasil, Nota Técnica 57):",
+        "9 núcleos de inflação, difusão, IPCA cheio e agregações por segmento — 23 séries mensais.",
+        "",
+        "Ao usar:",
+        "- Comece por `nucleos_ultimas` para um panorama do mês; use `nucleos_serie` para",
+        "  a história de uma série e `nucleos_comparar` para confrontar séries.",
+        "- Os dados são um snapshot pré-calculado, não uma consulta ao vivo. Consulte",
+        "  `nucleos_metadata` antes de afirmar que uma leitura é a mais recente disponível.",
+        "- A Difusão é a proporção (%) de itens com variação positiva no mês — um nível, não",
+        "  uma variação de preço. Não a acumule nem a compare em nível com os núcleos.",
+        "- As séries reproduzem as oficiais do SGS/BCB até a 2ª casa decimal de 1999 em diante.",
+      ].join("\n"),
+    },
+  );
 
   async init() {
     // 1) Listar séries disponíveis --------------------------------------

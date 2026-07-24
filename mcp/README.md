@@ -108,6 +108,17 @@ Em `~/.cursor/mcp.json` (global) ou `.cursor/mcp.json` (só no projeto):
 }
 ```
 
+### Claude Code (terminal e VS Code)
+
+```bash
+# disponivel em todos os seus projetos
+claude mcp add --scope user --transport http nucleos-ipca https://nucleos-mcp.analisemacro.workers.dev/mcp
+```
+
+Troque por `--scope project` para gravar um `.mcp.json` na raiz do repositório
+— versionado no git, então quem clonar herda o conector (útil para turma ou
+equipe). Confira com `claude mcp list` ou `/mcp` dentro da sessão.
+
 ### Codex CLI
 
 Em `~/.codex/config.toml` (global) ou `.codex/config.toml` (só no projeto):
