@@ -26,10 +26,14 @@ consultar os núcleos ao vivo — sem instalar nada, sem chave.
 | `nucleos_serie` | Série temporal de uma série (por período ou últimos N meses). |
 | `nucleos_comparar` | Compara várias séries lado a lado. |
 
+> **Unidades.** 22 das 23 séries são variação % ao mês e se acumulam de forma
+> composta. A **Difusão** é exceção: é a proporção (%) de itens do IPCA com
+> variação positiva no mês — um *nível*, que não se acumula. Para ela as tools
+> reportam a **média** do período, com nota explícita na resposta.
+
 ## Pré-requisitos
 
-- **Node.js 18+** e **npm** (para o `wrangler`). Nesta máquina ainda não há Node
-  — instale de <https://nodejs.org> (LTS).
+- **Node.js 18+** e **npm** (para o `wrangler`).
 - Conta **Cloudflare** gratuita (<https://dash.cloudflare.com/sign-up>).
 
 ## Deploy
@@ -37,9 +41,13 @@ consultar os núcleos ao vivo — sem instalar nada, sem chave.
 ```bash
 cd mcp
 npm install
+npm run check               # typecheck + build de validação, sem precisar de login
 npx wrangler login          # abre o navegador para autenticar na Cloudflare
 npm run deploy              # publica e imprime a URL pública
 ```
+
+O `npm run check` valida o bundle inteiro (~391 KB gzip, folgado no limite de
+3 MB do plano gratuito) sem tocar na sua conta — rode antes de qualquer deploy.
 
 O deploy imprime algo como:
 
