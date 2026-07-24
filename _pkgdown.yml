@@ -7,12 +7,15 @@ template:
 
 navbar:
   structure:
-    left:  [tutorial, reference, news]
+    left:  [tutorial, conectar, reference, news]
     right: [github]
   components:
     tutorial:
       text: Tutorial
       href: articles/nucleos.html
+    conectar:
+      text: Conectar com IA
+      href: articles/conectar-ia.html
     reference:
       text: Referência
       href: reference/index.html
