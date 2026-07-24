@@ -96,18 +96,29 @@ export class NucleosMCP extends McpAgent {
     // 2) Metadados -------------------------------------------------------
     this.server.tool(
       "nucleos_metadata",
-      "Retorna a proveniência e o estado do conjunto de dados: última referência mensal, data de atualização, fonte e metodologia.",
+      "Retorna a proveniência e o estado do conjunto de dados: última referência mensal, data de atualização, fonte, metodologia e há quanto tempo o snapshot foi gerado. Consulte antes de afirmar que um dado é o mais recente.",
       {},
       async () => {
+        // O snapshot é estático (embutido no Worker) e só muda por re-deploy.
+        // Calculamos a idade em tempo de execução para que uma versão esquecida
+        // no ar não passe por dado corrente.
+        const dias = Math.floor(
+          (Date.now() - Date.parse(META.atualizado_em)) / 86_400_000,
+        );
+        const alerta =
+          dias > 45
+            ? `\n> ⚠️ **Snapshot gerado há ${dias} dias.** O IPCA é mensal; um intervalo assim sugere que há divulgação mais recente do IBGE ainda não refletida aqui. Confira antes de tratar estes números como os últimos disponíveis.`
+            : "";
         const txt = [
           `**Último mês de referência:** ${META.ultimo_mes}`,
-          `**Atualizado em:** ${META.atualizado_em}`,
+          `**Atualizado em:** ${META.atualizado_em} (há ${dias} dia${dias === 1 ? "" : "s"})`,
           `**Nº de séries:** ${META.n_series}`,
           `**Fonte:** ${META.fonte}`,
           `**Metodologia:** ${META.metodologia}`,
+          alerta,
           "",
-          "_As séries reproduzem as oficiais do SGS/BCB até a 2ª casa decimal (de 1999 em diante)._",
-        ].join("\n");
+          "_As séries reproduzem as oficiais do SGS/BCB até a 2ª casa decimal (de 1999 em diante). Os dados são um snapshot pré-calculado, atualizado por re-deploy — não uma consulta ao vivo ao SIDRA._",
+        ].filter(Boolean).join("\n");
         return { content: [{ type: "text", text: txt }] };
       },
     );

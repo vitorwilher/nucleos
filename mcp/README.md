@@ -1,12 +1,17 @@
 # MCP Análise Macro — Núcleos do IPCA (v1)
 
 Servidor **MCP remoto e sem autenticação** que expõe as séries analíticas do
-IPCA (Nota Técnica 57 do BCB), calculadas pelo pacote R [`nucleos`](../). É a
-v1 (beta) do **MCP Análise Macro**: entrega estreita (só núcleos do IPCA),
-marca ampla.
+IPCA (Nota Técnica 57 do BCB), calculadas pelo pacote R [`nucleos`](../).
 
-Qualquer pessoa adiciona a URL como *custom connector* no Claude.ai e passa a
-consultar os núcleos ao vivo — sem instalar nada, sem chave.
+Qualquer pessoa adiciona a URL no Claude, Cursor ou Codex e passa a consultar
+os núcleos ao vivo — sem instalar nada, sem chave.
+
+> **Escopo.** Este Worker é o **piloto dos núcleos do IPCA**, casado com este
+> repositório: serve o que o pacote `nucleos` calcula, e só isso. O produto
+> guarda-chuva **MCP Análise Macro** — que reunirá Selic/COPOM, câmbio,
+> atividade, fiscal e Focus — nasce em projeto e infraestrutura próprios. Não
+> expanda este servidor para outras séries; ele existe para validar o design
+> das ferramentas no uso real.
 
 ## Arquitetura
 
@@ -64,17 +69,52 @@ https://nucleos-mcp.<seu-subdominio>.workers.dev/mcp
 Abra a URL raiz no navegador para um health-check (mostra o último mês e o
 endpoint do conector).
 
-## Conectar no Claude.ai (o que você manda para a sua rede)
+## Conectar (o que você manda para a sua rede)
 
-1. Claude.ai → **Configurações → Connectors → Adicionar conector personalizado**.
+O servidor é **authless** e fala **Streamable HTTP**, o transporte que os três
+clientes abaixo suportam nativamente por URL — ninguém precisa instalar ponte
+(`mcp-remote`), colar chave nem logar. Em todos, a URL é a mesma, terminada
+em `/mcp`.
+
+### Claude (claude.ai e Claude Desktop)
+
+1. **Configurações → Connectors → Adicionar conector personalizado**.
 2. Cole a URL terminada em `/mcp`.
 3. Salvar. As ferramentas `nucleos_*` ficam disponíveis no chat.
 
 > Funciona em **todos os planos** (Free inclusive — o Free permite 1 conector
-> personalizado). Como é authless, ninguém precisa colar chave nem logar.
+> personalizado).
 
-Teste rápido no chat: *"Quais as últimas leituras dos núcleos do IPCA?"* ou
-*"Compare o Núcleo MS com o IPCA cheio."*
+### Cursor
+
+Em `~/.cursor/mcp.json` (global) ou `.cursor/mcp.json` (só no projeto):
+
+```json
+{
+  "mcpServers": {
+    "nucleos-ipca": {
+      "url": "https://nucleos-mcp.<seu-subdominio>.workers.dev/mcp"
+    }
+  }
+}
+```
+
+### Codex CLI
+
+Em `~/.codex/config.toml` (global) ou `.codex/config.toml` (só no projeto):
+
+```toml
+[mcp_servers.nucleos_ipca]
+url = "https://nucleos-mcp.<seu-subdominio>.workers.dev/mcp"
+```
+
+> `codex mcp add` serve para servidores stdio; para servidor remoto por URL,
+> edite o `config.toml` direto. Sem autenticação, nenhum token é necessário.
+
+### Teste rápido
+
+Pergunte no chat: *"Quais as últimas leituras dos núcleos do IPCA?"*,
+*"Compare o Núcleo MS com o IPCA cheio."* ou *"A difusão está subindo?"*
 
 ## Desenvolvimento local
 
