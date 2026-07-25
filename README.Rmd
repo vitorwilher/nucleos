@@ -32,6 +32,21 @@ a segunda casa decimal no período posterior a 1999.
 
 Faz parte dos **cursos da [Análise Macro](https://analisemacro.com.br/)**.
 
+## Use no Claude, Cursor ou Codex — sem instalar nada
+
+As séries estão disponíveis dentro do seu assistente de IA pelo **MCP Análise
+Macro**. Pergunte em português — *"os núcleos do IPCA estão desacelerando?"* — e
+a resposta vem com os números calculados por este pacote.
+
+Adicione este endereço como conector (é público, gratuito e não pede chave):
+
+```
+https://nucleos-mcp.analisemacro.workers.dev/mcp
+```
+
+O passo a passo para cada programa está na página
+[**Conectar com IA**](https://vitorwilher.github.io/nucleos/articles/conectar-ia.html).
+
 ## Instalação
 
 ```{r}
