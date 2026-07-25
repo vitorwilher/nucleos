@@ -54,16 +54,24 @@
 <p>Cada série é verificada, em testes automatizados, contra a série oficial do Sistema Gerenciador de Séries Temporais (SGS) do Banco Central, reproduzindo até a segunda casa decimal no período posterior a 1999.</p>
 <p>Faz parte dos <strong>cursos da <a href="https://analisemacro.com.br/" class="external-link">Análise Macro</a></strong>.</p>
 <div class="section level2">
+<h2 id="use-no-claude-cursor-ou-codex--sem-instalar-nada">Use no Claude, Cursor ou Codex — sem instalar nada<a class="anchor" aria-label="anchor" href="#use-no-claude-cursor-ou-codex--sem-instalar-nada"></a>
+</h2>
+<p>As séries estão disponíveis dentro do seu assistente de IA pelo <strong>MCP Análise Macro</strong>. Pergunte em português — <em>“os núcleos do IPCA estão desacelerando?”</em> — e a resposta vem com os números calculados por este pacote.</p>
+<p>Adicione este endereço como conector (é público, gratuito e não pede chave):</p>
+<pre><code>https://nucleos-mcp.analisemacro.workers.dev/mcp</code></pre>
+<p>O passo a passo para cada programa está na página <a href="https://vitorwilher.github.io/nucleos/articles/conectar-ia.html"><strong>Conectar com IA</strong></a>.</p>
+</div>
+<div class="section level2">
 <h2 id="instalação">Instalação<a class="anchor" aria-label="anchor" href="#instala%C3%A7%C3%A3o"></a>
 </h2>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="st"><a href="https://remotes.r-lib.org" class="external-link">"remotes"</a></span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"remotes"</span><span class="op">)</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"vitorwilher/nucleos"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="uso">Uso<a class="anchor" aria-label="anchor" href="#uso"></a>
 </h2>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/vitorwilher/nucleos" class="external-link">nucleos</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Coleta o IPCA do SIDRA/IBGE (costura as cinco estruturas desde 1991)</span></span>

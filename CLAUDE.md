@@ -125,30 +125,46 @@ SIDRA ao vivo no app).
   núcleo médio, difusão, tabela + download, rodapé de confiança (selo
   “reproduz o SGS”).
 
-## MCP Análise Macro (planejado)
+## MCP Análise Macro (v1 NO AR)
+
+> **Estado (2026-07-25):** implementado, publicado e em produção em
+> `https://nucleos-mcp.analisemacro.workers.dev/mcp`. O código vive em
+> `mcp/` (TypeScript, Cloudflare Workers). Ver `mcp/README.md` para
+> arquitetura e deploy, e a vignette `conectar-ia.Rmd` para o guia de
+> instalação.
 
 Nome do produto: **MCP Análise Macro** — guarda-chuva de marca, não “MCP
-Núcleos”. Estratégia: **nome amplo, entrega estreita**. v1 (beta) traz
-só os **núcleos do IPCA** (carro-chefe, dados prontos); depois expande
-módulo a módulo para outras séries da casa (Selic/COPOM, câmbio,
-atividade, fiscal, expectativas do Focus), virando “a inteligência macro
-do Brasil dentro do Claude”.
+Núcleos”. Estratégia: **nome amplo, entrega estreita**. A v1 traz só os
+**núcleos do IPCA** (carro-chefe, dados prontos); a expansão para outras
+séries da casa (Selic/COPOM, câmbio, atividade, fiscal, Focus) **nasce
+em projeto e infraestrutura próprios** — não expanda este Worker, que
+existe para validar o design das ferramentas no uso real.
 
-Direção para virar **produto de consultoria**: expor os núcleos como MCP
-que o Claude consome ao vivo (claude.ai / Claude Code). A camada de
-dados já existe (release `dashboard-dados`), então o MCP é **fino** —
-pode ser TS/Python, **sem R dentro**, lendo o artefato publicado.
+**O que foi construído** (difere do plano original em dois pontos):
 
-- **Local (stdio)** primeiro, para o próprio Vítor: não é operar
-  serviço, roda sob demanda. **Remoto (hosted + auth)** depois, para
-  clientes: aí sim é operar um serviço — mas **magro** (dado quase
-  estático, atualiza 1x/mês), então dá para rodar **serverless**
-  (Cloudflare Workers / Lambda / Deno Deploy), custo ocioso perto de
-  zero.
-- **Tools previstas:** `nucleos_ultimas()`, `nucleos_serie()`,
-  `nucleos_comparar()`, `nucleos_listar()`, `nucleos_metadata()`, e um
-  workflow tipo `panorama_inflacao()` (não só dado cru — entrega a
-  leitura de conjuntura).
+- **Remoto desde o início, e *authless***. O plano previa stdio local
+  primeiro e remoto com auth depois. Na prática, publicar direto como
+  Worker remoto **sem autenticação** eliminou toda a fricção de adoção:
+  cola-se a URL no Claude, Cursor ou Codex e funciona, sem ponte
+  (`mcp-remote`), sem chave, sem login. Como o servidor **só devolve
+  dado público e não acessa arquivo do usuário**, a superfície de risco
+  é mínima. Auth fica para o tier de clientes.
+
+- **Auto-update sem re-deploy.** O Worker busca `series_nucleos.json` no
+  release `dashboard-dados` em runtime (cache de 6h), então o workflow
+  mensal atualiza o MCP sozinho. `mcp/src/data.json` é só **fallback**
+  se o fetch falhar.
+
+- **Tools implementadas (5):** `nucleos_listar`, `nucleos_metadata`,
+  `nucleos_ultimas`, `nucleos_serie`, `nucleos_comparar`. O workflow
+  `panorama_inflacao()` (leitura de conjuntura, não dado cru) segue
+  **pendente** — é o principal próximo passo do MCP.
+
+- **Cuidados de domínio embutidos no protocolo:** a Difusão é tratada
+  como *nível* (média do período, não acumulado composto);
+  `nucleos_metadata` alerta se o snapshot tem mais de 45 dias; e o campo
+  `instructions` do handshake avisa o modelo de que os dados são
+  snapshot pré-calculado, não consulta ao vivo.
 
 **Referências — MCPs de dados financeiros (pesquisa jul/2026).** Todos
 são mercado global/US (ações, fundamentos, filings); **nenhum faz macro
