@@ -25,31 +25,44 @@ type Meta = {
 };
 type Snapshot = { metadata: Meta; series: Record<string, Serie> };
 
-// Fonte viva: o mesmo artefato JSON que o workflow mensal publica no release
-// `dashboard-dados`. O snapshot embutido (import acima) é só o fallback para
-// quando o fetch falha — assim o Worker se atualiza sozinho, sem re-deploy.
-const DATA_URL =
-  "https://github.com/vitorwilher/nucleos/releases/download/dashboard-dados/series_nucleos.json";
+// Fonte viva: o artefato JSON que o workflow mensal publica no release
+// `dashboard-dados`. A fonte principal é o repositório da Análise Macro
+// (analisemacro/nucleos-dados); o release antigo do pacote fica como reserva.
+// Lê as duas e usa a de `ultimo_mes` mais recente — assim um release vazio ou
+// atrasado nunca rebaixa o dado servido. O snapshot embutido (import acima) é
+// só o fallback para quando nenhum fetch funciona.
+const DATA_URLS = [
+  "https://github.com/analisemacro/nucleos-dados/releases/download/dashboard-dados/series_nucleos.json",
+  "https://github.com/vitorwilher/nucleos/releases/download/dashboard-dados/series_nucleos.json",
+];
 const TTL_MS = 6 * 60 * 60 * 1000; // revalida no máximo a cada 6h por isolate
 
 let cache: { at: number; data: Snapshot } | null = null;
 
+async function fetchSnapshot(url: string): Promise<Snapshot | null> {
+  try {
+    const res = await fetch(url, { cf: { cacheTtl: 3600, cacheEverything: true } });
+    if (!res.ok) return null;
+    const data = (await res.json()) as Snapshot;
+    return data?.series && data?.metadata?.ultimo_mes ? data : null;
+  } catch {
+    return null; // GitHub/rede indisponível
+  }
+}
+
 async function loadData(): Promise<Snapshot> {
   const now = Date.now();
   if (cache && now - cache.at < TTL_MS) return cache.data;
-  try {
-    const res = await fetch(DATA_URL, {
-      cf: { cacheTtl: 3600, cacheEverything: true },
-    });
-    if (res.ok) {
-      const data = (await res.json()) as Snapshot;
-      if (data?.series && data?.metadata) {
-        cache = { at: now, data };
-        return data;
-      }
-    }
-  } catch {
-    // GitHub/rede indisponível — cai no fallback abaixo.
+  const candidatos = (await Promise.all(DATA_URLS.map(fetchSnapshot))).filter(
+    (d): d is Snapshot => d !== null,
+  );
+  if (candidatos.length) {
+    // "AAAA-MM" ordena lexicograficamente = cronologicamente
+    const melhor = candidatos.reduce((a, b) =>
+      b.metadata.ultimo_mes > a.metadata.ultimo_mes ? b : a,
+    );
+    cache = { at: now, data: melhor };
+    return melhor;
   }
   // Preserva o último bom; se nunca houve, usa o snapshot embutido no bundle.
   if (!cache) cache = { at: now, data: fallback as Snapshot };
