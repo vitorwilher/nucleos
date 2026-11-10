@@ -88,8 +88,19 @@ Sys.setenv(RSTUDIO_PANDOC="c:/Users/vitor.lima/AppData/Local/Programs/Quarto/bin
 - **GitHub:** duas contas no `gh` — `vitorwilher` (pessoal, dona do repo) e
   `analisemacro` (admin na org). Trocar com `gh auth switch --user <conta>`.
   Push ao repo exige a conta `vitorwilher` ativa.
-- **CI:** `pkgdown.yaml` publica o site em `gh-pages`; `dados-dashboard.yaml`
-  atualiza os dados do dashboard mensalmente.
+- **CI:** `pkgdown.yaml` publica o site em `gh-pages`. A **atualização mensal
+  dos dados NÃO roda mais aqui** (o antigo `dados-dashboard.yaml` foi removido
+  em 10/11/2026): vive em **`github.com/analisemacro/nucleos-dados`**
+  (`.github/workflows/atualizar-dados.yaml`), que baixa este pacote, roda
+  `dashboard/gerar_dados.R` e publica no release `dashboard-dados` *daquele*
+  repo. Roda 2x/dia nos dias 7–16 e só calcula quando o SIDRA tem mês novo;
+  `workflow_dispatch` com `forcar=true` recalcula. Para disparar/pushar lá, a
+  conta `analisemacro` (token com escopo `workflow`).
+- **Bloqueios do IBGE a runners (nov/2026):** a raiz de `apisidra.ibge.gov.br`
+  dá 403 (desafio Cloudflare) e `servicodados.ibge.gov.br` não aceita conexão
+  dos runners do GitHub (timeout). O pacote só usa endpoints `apisidra/values/...`
+  (que respondem); `servicodados` fica apenas como reserva. Não reintroduzir
+  chamadas a `servicodados` no caminho principal da coleta.
 
 ## Dashboard (em construção)
 
@@ -97,8 +108,10 @@ Produto: monitor dos núcleos do IPCA, atualizado mensalmente. Arquitetura:
 **dados pré-calculados fora da sessão** (nunca coletar SIDRA ao vivo no app).
 
 - **Fase 1 (feita):** `dashboard/gerar_dados.R` calcula as séries e publica um
-  artefato compacto como asset do release **`dashboard-dados`**. O app lê de
-  `https://github.com/vitorwilher/nucleos/releases/download/dashboard-dados/series_nucleos.rds`.
+  artefato compacto como asset do release **`dashboard-dados`** de
+  `analisemacro/nucleos-dados`. O app deve ler de
+  `https://github.com/analisemacro/nucleos-dados/releases/download/dashboard-dados/series_nucleos.rds`
+  (o release antigo de `vitorwilher/nucleos` parou em set/2026 e não é mais atualizado).
   O artefato tem `series` (long: date, serie, variacao), `conformidade` e
   `metadata` (atualizado_em, ultimo_mes).
 - **Fase 2 (próxima):** app Shiny lendo o artefato; deploy no **shinyapps.io**
@@ -128,9 +141,11 @@ design das ferramentas no uso real.
   Cursor ou Codex e funciona, sem ponte (`mcp-remote`), sem chave, sem login.
   Como o servidor **só devolve dado público e não acessa arquivo do usuário**, a
   superfície de risco é mínima. Auth fica para o tier de clientes.
-- **Auto-update sem re-deploy.** O Worker busca `series_nucleos.json` no release
-  `dashboard-dados` em runtime (cache de 6h), então o workflow mensal atualiza o
-  MCP sozinho. `mcp/src/data.json` é só **fallback** se o fetch falhar.
+- **Auto-update sem re-deploy.** O Worker busca `series_nucleos.json` em runtime
+  (cache de 6h) em **duas fontes** — o release de `analisemacro/nucleos-dados`
+  (principal) e o antigo de `vitorwilher/nucleos` (reserva) — e serve a de
+  `ultimo_mes` mais recente; o workflow mensal atualiza o MCP sozinho.
+  `mcp/src/data.json` é só **fallback** se nenhum fetch funcionar.
 
 - **Tools implementadas (5):** `nucleos_listar`, `nucleos_metadata`,
   `nucleos_ultimas`, `nucleos_serie`, `nucleos_comparar`. O workflow
