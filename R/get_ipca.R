@@ -149,12 +149,27 @@ busca_em_lotes <- function(tabela, variaveis, de, ate, classificacao, n_componen
   }))
 }
 
-# Ultimo mes publicado numa tabela, segundo os metadados do IBGE.
+# Ultimo mes publicado numa tabela. Primeiro via apisidra (a API de dados, que
+# responde aos runners do GitHub); os metadados de servicodados.ibge.gov.br ficam
+# de reserva -- desde nov/2026 esse host nao aceita conexao dos runners.
 ultimo_mes <- function(tabela) {
-  u <- sprintf("https://servicodados.ibge.gov.br/api/v3/agregados/%d/metadados", tabela)
-  meta <- jsonlite::fromJSON(u, simplifyVector = FALSE)
-  fim <- meta$periodicidade$fim
-  if (is.null(fim)) {
+  de_apisidra <- function() {
+    u <- sprintf(
+      "https://apisidra.ibge.gov.br/values/t/%d/n1/all/p/last%%201?formato=json",
+      tabela
+    )
+    d <- jsonlite::fromJSON(u, simplifyVector = FALSE)
+    col <- names(d[[1]])[unlist(d[[1]]) == "M\u00eas (C\u00f3digo)"]
+    if (length(col) != 1 || length(d) < 2) return(NULL)
+    max(vapply(d[-1], function(r) r[[col]], character(1)))
+  }
+  de_servicodados <- function() {
+    u <- sprintf("https://servicodados.ibge.gov.br/api/v3/agregados/%d/metadados", tabela)
+    jsonlite::fromJSON(u, simplifyVector = FALSE)$periodicidade$fim
+  }
+  fim <- tryCatch(de_apisidra(), error = function(e) NULL)
+  if (is.null(fim)) fim <- tryCatch(de_servicodados(), error = function(e) NULL)
+  if (is.null(fim) || !grepl("^[0-9]{6}$", fim)) {
     rlang::abort(sprintf(
       "Nao foi possivel descobrir o ultimo mes da tabela %d do SIDRA.", tabela
     ))
