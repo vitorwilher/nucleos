@@ -166,8 +166,14 @@ checa_conexao <- function() {
   if (!curl::has_internet()) {
     rlang::abort("Sem conexao com a internet.")
   }
+  # Testa um endpoint de dados minimo, nao a raiz: desde out/2026 a raiz de
+  # apisidra.ibge.gov.br responde 403 (desafio do Cloudflare) mesmo com a API
+  # de dados funcionando normalmente.
   resp <- tryCatch(
-    httr::GET("https://apisidra.ibge.gov.br/", httr::timeout(60)),
+    httr::GET(
+      "https://apisidra.ibge.gov.br/values/t/7060/n1/all/v/63/p/last%201/c315/7169?formato=json",
+      httr::timeout(60)
+    ),
     error = function(e) e
   )
   # Nao mascarar a causa: um erro de ambiente (pacote ausente, proxy, DNS) nao
@@ -178,9 +184,11 @@ checa_conexao <- function() {
     ))
   }
   if (httr::http_error(resp)) {
+    desafio <- identical(httr::headers(resp)[["cf-mitigated"]], "challenge")
     rlang::abort(sprintf(
-      "A API do SIDRA/IBGE respondeu com erro (HTTP %d).",
-      httr::status_code(resp)
+      "A API do SIDRA/IBGE respondeu com erro (HTTP %d)%s.",
+      httr::status_code(resp),
+      if (desafio) " -- bloqueio anti-robo do Cloudflare (cf-mitigated: challenge)" else ""
     ))
   }
   invisible(TRUE)
@@ -201,8 +209,10 @@ busca_sidra <- function(tabela, variaveis, periodo, classificacao, tentativas = 
       httr::GET(url, httr::timeout(180)),
       error = function(e) e
     )
-    if (!inherits(resp, "error")) break
-    if (t < tentativas) Sys.sleep(2 * t)
+    transitorio <- inherits(resp, "error") ||
+      httr::status_code(resp) %in% c(429L, 500L, 502L, 503L, 504L)
+    if (!transitorio) break
+    if (t < tentativas) Sys.sleep(5 * 2^(t - 1))  # 5s, 10s, 20s...
   }
   if (inherits(resp, "error")) {
     rlang::abort(sprintf(
@@ -213,8 +223,10 @@ busca_sidra <- function(tabela, variaveis, periodo, classificacao, tentativas = 
 
   if (httr::http_error(resp)) {
     rlang::abort(sprintf(
-      "Falha ao consultar a tabela %d do SIDRA (HTTP %d).",
-      tabela, httr::status_code(resp)
+      "Falha ao consultar a tabela %d do SIDRA (HTTP %d)%s.",
+      tabela, httr::status_code(resp),
+      if (identical(httr::headers(resp)[["cf-mitigated"]], "challenge"))
+        " -- bloqueio anti-robo do Cloudflare (cf-mitigated: challenge)" else ""
     ))
   }
 
