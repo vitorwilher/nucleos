@@ -4,6 +4,7 @@ bibliography: referencias.bib
 format:
   pdf:
     pdf-engine: xelatex
+    include-after-body: sobre-am.tex
     toc: false
     number-sections: true
     geometry:
